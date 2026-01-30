@@ -969,11 +969,12 @@ kbd{
   font-size: 12px;
   opacity: .6;
 }
-/* ===== PHONE: use native keyboard instead of the on-screen keyboard ===== */
-@media (max-width: 430px){
-  #keyboard{ display:none !important; }
-  .hint{ margin-top:8px; font-size:12px; }
-  .legal{ font-size:11px; }
+
+/* MOBILE: reclaim space by hiding the big YIPPEE header tiles */
+@media (max-width: 520px){
+  #logoRow, .logoRow, #logo, .logo, #headerLogo, .headerLogo{
+    display:none !important;
+  }
 }
 
 </style>
