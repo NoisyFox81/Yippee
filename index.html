@@ -1,0 +1,2193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Yippee</title>
+
+<style>
+:root{
+  --bg:#f6f6f5;
+  --ink:#111;
+  --tile:#ffffff;
+
+  /* these get auto-tuned by JS */
+  --tileSize:56px;
+  --logoTile:52px;
+  --gap:12px;
+  --colGap:10px;
+  --colPadY:14px;
+  --colPadX:10px;
+
+  --radius:12px;
+  --border:2px;
+
+  /* result colors */
+  --solved:#0f766e;
+  --wrong:#334155;
+
+  --c0:#dbe8ff;
+  --c1:#dff4e6;
+  --c2:#ffe7c7;
+  --c3:#ecdfff;
+  --c4:#ffe0ec;
+
+  --keyBlue:#e6efff;
+  --keyMint:#e8f6ef;
+  --keyPeach:#fff1dc;
+  --keyNeutral:#f1f1f1;
+
+  --keyPadY:14px;
+  --keyPadX:12px;
+  --keyMinW:34px;
+  --keyFont:14px;
+
+  /* animation timings */
+  --flipMs:720ms;
+  --cascadeMs:200ms;
+  --clearHoldMs:520ms;
+  --unflipCascadeMs:180ms;
+
+  /* intro pacing (slower) */
+  --introDelayMs:210ms;
+
+  /* finale timings */
+  --finaleStartDelayMs:80ms;
+  --finaleAnswerStaggerMs:65ms;
+  --finaleAnchorStaggerMs:95ms;
+  --finaleGoldHoldMs:240ms;
+
+  /* modal */
+  --modalBlur:10px;
+
+  /* HELP accent (must NOT be winning green) */
+  --helpAccent: var(--c2);
+}
+
+html,body{ height:100%; }
+
+body{
+  font-family: system-ui, -apple-system, BlinkMacSystemFont;
+  background:
+    radial-gradient(900px 560px at 50% 20%, rgba(0,0,0,0.04), rgba(0,0,0,0) 55%),
+    var(--bg);
+  color:var(--ink);
+  margin:0;
+}
+
+/* ===== APP LAYOUT ===== */
+#app{
+  height:100dvh;
+  display:flex;
+  flex-direction:column;
+}
+
+header{
+  position:sticky;
+  top:0;
+  z-index:10;
+  display:flex;
+  justify-content:center;
+  padding:10px 10px 8px;
+  background:linear-gradient(to bottom, rgba(246,246,245,0.96), rgba(246,246,245,0.86));
+  backdrop-filter: blur(6px);
+}
+
+/* ===== HEADER HELP CLUSTER (info + 3 help tiles) ===== */
+.helpCluster{
+  position:absolute;
+  right:12px;
+  top:10px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  user-select:none;
+
+  border:2px solid var(--ink);
+  border-radius:16px;
+  padding:8px 10px;
+
+  /* CHANGED: outer box should be white */
+  background:
+    radial-gradient(220px 120px at 30% 18%, rgba(255,255,255,0.75), rgba(255,255,255,0) 60%),
+    linear-gradient(180deg, rgba(255,255,255,0.40), rgba(255,255,255,0.15)),
+    #ffffff;
+
+  box-shadow:
+    0 16px 34px rgba(0,0,0,0.12),
+    inset 0 1px 0 rgba(255,255,255,0.75);
+  backdrop-filter: blur(4px);
+}
+.helpCluster::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  border-radius:inherit;
+  background: radial-gradient(220px 110px at 24% 14%, rgba(255,255,255,0.75), rgba(255,255,255,0) 62%);
+  opacity:0.65;
+  pointer-events:none;
+}
+
+/* The ? tiles (both in header and in modal title use this class) */
+.helpInfoBtn{
+  width:34px;
+  height:34px;
+  border:2px solid var(--ink);
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:1000;
+
+  /* CHANGED: header ? tile should match bullet green (solved) */
+  background: var(--solved);
+
+  box-shadow:
+    0 10px 18px rgba(0,0,0,0.12),
+    inset 0 1px 0 rgba(255,255,255,0.8);
+  cursor:pointer;
+  position:relative;
+}
+.helpInfoBtn::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  border-radius:inherit;
+  background: radial-gradient(140px 80px at 26% 18%, rgba(255,255,255,0.75), rgba(255,255,255,0) 62%);
+  opacity:0.85;
+  pointer-events:none;
+}
+.helpInfoBtn:active{ transform:scale(0.98); }
+
+.helpUses{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.miniHelpTile{
+  width:26px;
+  height:26px;
+  perspective:900px;
+  cursor:pointer;
+}
+.miniHelpTile[aria-disabled="true"]{
+  cursor:default;
+}
+.miniHelpInner{
+  width:100%;
+  height:100%;
+  transform-style:preserve-3d;
+  transition: transform var(--flipMs) cubic-bezier(.2,.7,.3,1);
+  will-change: transform;
+}
+.miniHelpFace{
+  position:absolute;
+  inset:0;
+  border:2px solid var(--ink);
+  border-radius:10px;
+  backface-visibility:hidden;
+  box-shadow:
+    0 8px 14px rgba(0,0,0,0.12),
+    inset 0 1px 0 rgba(255,255,255,0.8);
+}
+.miniHelpFace::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  border-radius:inherit;
+  background: radial-gradient(120px 70px at 26% 18%, rgba(255,255,255,0.70), rgba(255,255,255,0) 62%);
+  opacity:0.70;
+  pointer-events:none;
+}
+
+/* FRONT = AVAILABLE (green) */
+.miniHelpFront{
+  background:
+    radial-gradient(80px 44px at 28% 18%, rgba(255,255,255,0.65), rgba(255,255,255,0) 62%),
+    linear-gradient(135deg, rgba(15,118,110,0.24), rgba(15,118,110,0.06)),
+    var(--solved);
+}
+
+/* BACK = SPENT (empty) */
+.miniHelpBack{
+  transform: rotateX(180deg);
+  background: rgba(255,255,255,0.85);
+}
+
+/* spent look */
+.miniHelpTile.spent{
+  opacity:0.55;
+}
+.miniHelpTile.spent .miniHelpInner{
+  transform: rotateX(180deg);
+}
+
+/* disable animation for initial state render so spent tiles don't "flip" on load */
+.miniHelpTile.noAnim .miniHelpInner{
+  transition:none !important;
+}
+
+/* Armed state: subtle glow so player knows they're in help mode */
+.helpCluster.armed{
+  box-shadow:
+    0 16px 34px rgba(0,0,0,0.12),
+    0 0 0 3px rgba(15,118,110,0.20),
+    inset 0 1px 0 rgba(255,255,255,0.75);
+}
+
+main{
+  flex:1;
+  overflow:auto;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:12px 10px;
+}
+
+footer{
+  position:sticky;
+  bottom:0;
+  z-index:10;
+  background:linear-gradient(to top, rgba(246,246,245,0.96), rgba(246,246,245,0.86));
+  backdrop-filter: blur(6px);
+  padding:8px 10px 12px;
+}
+
+#wrap{
+  width:min(900px, 96vw);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:12px;
+}
+
+/* ===== LOGO ===== */
+.logo{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  justify-content:center;
+  padding:10px 12px;
+  border-radius:18px;
+  box-shadow:
+    0 18px 40px rgba(0,0,0,0.08),
+    inset 0 1px 0 rgba(255,255,255,0.65);
+  perspective:900px;
+}
+
+.logoTile{
+  width:var(--logoTile);
+  height:var(--logoTile);
+  border:2px solid var(--ink);
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:1000;
+  font-size:calc(var(--logoTile) * 0.5);
+  letter-spacing:0.5px;
+  background:var(--tile);
+  box-shadow:
+    0 10px 18px rgba(0,0,0,0.12),
+    inset 0 1px 0 rgba(255,255,255,0.8);
+  position:relative;
+
+  transform-style:preserve-3d;
+  will-change:transform;
+}
+
+.logoTile::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  border-radius:inherit;
+  background: radial-gradient(160px 90px at 26% 18%, rgba(255,255,255,0.75), rgba(255,255,255,0) 62%);
+  opacity:0.85;
+  pointer-events:none;
+}
+
+.logoTile.t0{ background:var(--c0); }
+.logoTile.t1{ background:var(--c1); }
+.logoTile.t2{ background:var(--c2); }
+.logoTile.t3{ background:var(--c3); }
+.logoTile.t4{ background:var(--c4); }
+
+/* header logo spin (on LET'S GO) */
+@keyframes logoFlip{
+  0%{ transform: rotateX(0deg); }
+  50%{ transform: rotateX(180deg); }
+  100%{ transform: rotateX(360deg); }
+}
+.logoTile.spin{
+  animation: logoFlip var(--flipMs) cubic-bezier(.2,.7,.3,1) both;
+}
+
+/* ===== BOARD ===== */
+.board{
+  display:flex;
+  gap:var(--gap);
+  align-items:flex-start;
+}
+
+.col[data-col="0"]{ background:var(--c0); }
+.col[data-col="1"]{ background:var(--c1); }
+.col[data-col="2"]{ background:var(--c2); }
+.col[data-col="3"]{ background:var(--c3); }
+.col[data-col="4"]{ background:var(--c4); }
+
+.col{
+  padding: var(--colPadY) var(--colPadX);
+  border-radius:18px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:var(--colGap);
+  box-shadow:
+    0 14px 32px rgba(0,0,0,0.08),
+    inset 0 1px 0 rgba(255,255,255,0.55);
+}
+
+.col.shake{ animation:shake 260ms ease; }
+@keyframes shake{
+  0%{ transform:translateX(0); }
+  20%{ transform:translateX(-8px); }
+  40%{ transform:translateX(8px); }
+  60%{ transform:translateX(-6px); }
+  80%{ transform:translateX(6px); }
+  100%{ transform:translateX(0); }
+}
+
+/* ===== TILES ===== */
+.tile{
+  width:var(--tileSize);
+  height:var(--tileSize);
+  perspective:900px;
+  cursor:pointer;
+}
+
+.tileInner{
+  width:100%;
+  height:100%;
+  transform-style:preserve-3d;
+  transition:transform var(--flipMs) cubic-bezier(.2,.7,.3,1);
+  will-change: transform;
+}
+
+.face{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:var(--border) solid var(--ink);
+  border-radius:var(--radius);
+  background:var(--tile);
+  font-weight:900;
+  font-size:calc(var(--tileSize) * 0.46);
+  backface-visibility:hidden;
+  letter-spacing:0.4px;
+  box-shadow:
+    0 10px 18px rgba(0,0,0,0.12),
+    inset 0 1px 0 rgba(255,255,255,0.8);
+}
+
+.face::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  border-radius:inherit;
+  background: radial-gradient(160px 90px at 26% 18%, rgba(255,255,255,0.75), rgba(255,255,255,0) 62%);
+  opacity:0.85;
+  pointer-events:none;
+}
+
+.back{ transform:rotateX(180deg); }
+
+.tile.anchor{ cursor:default; }
+.tile.anchor .face{ font-weight:1000; }
+
+.tile.selected .face{
+  outline:3px solid #111;
+  outline-offset:2px;
+}
+
+.tile.spacer{ pointer-events:none; }
+.tile.spacer .face{
+  border:0;
+  background:transparent;
+  box-shadow:none;
+}
+.tile.spacer .face::before{ display:none; }
+
+.tile.flipped .tileInner{ transform:rotateX(180deg); }
+
+.tile.solvedBack .back{
+  background:var(--solved);
+  color:#fff;
+  border-color:var(--solved);
+}
+
+.tile.wrongBack .back{
+  background:var(--wrong);
+  color:#fff;
+  border-color:var(--wrong);
+}
+
+.tile.locked{ cursor:default; }
+
+/* ===== Finale animations ===== */
+@keyframes answerFinaleFlip{
+  0%   { transform: rotateX(180deg); }
+  100% { transform: rotateX(540deg); }
+}
+.tile.finaleAnswer .tileInner{
+  animation: answerFinaleFlip 620ms cubic-bezier(.2,.7,.3,1) both;
+}
+
+.tile.anchor .back{
+  transform: rotateY(180deg);
+}
+@keyframes anchorPageFlip{
+  0%   { transform: rotateY(0deg); }
+  100% { transform: rotateY(-180deg); }
+}
+.tile.finaleAnchor .tileInner{
+  animation: anchorPageFlip 680ms cubic-bezier(.15,.75,.25,1) both;
+}
+
+.tile.anchorGold .back{
+  color:#2b1d00;
+  border-color:#a97900;
+  background:
+    radial-gradient(140px 90px at 28% 18%, rgba(255,255,255,0.85), rgba(255,255,255,0) 60%),
+    linear-gradient(135deg,
+  #fff6b7 0%,
+  #ffd24a 18%,
+  #ffb300 42%,
+  #ffe07a 66%,
+  #c88400 100%);
+
+  box-shadow:
+    0 10px 18px rgba(0,0,0,0.14),
+    inset 0 1px 0 rgba(255,255,255,0.75);
+}
+
+.tile.anchorGold .back::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  background:
+    radial-gradient(120px 70px at 78% 22%, rgba(255,255,255,0.55), rgba(255,255,255,0) 60%),
+    radial-gradient(120px 70px at 22% 80%, rgba(255,255,255,0.22), rgba(255,255,255,0) 62%);
+  pointer-events:none;
+  mix-blend-mode: screen;
+  opacity:0.85;
+}
+
+/* ===== KEYBOARD ===== */
+.keyboard{
+  width:min(900px, 96vw);
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.keyRow{
+  display:flex;
+  justify-content:center;
+  gap:8px;
+}
+
+.key{
+  border:2px solid #111;
+  border-radius:12px;
+  padding: var(--keyPadY) var(--keyPadX);
+  font-weight:900;
+  cursor:pointer;
+  min-width: var(--keyMinW);
+  box-shadow:0 8px 14px rgba(0,0,0,0.1);
+  user-select:none;
+  background:var(--keyNeutral);
+  font-size: var(--keyFont);
+}
+
+.keyRow:nth-child(1) .key{ background:var(--keyBlue); }
+.keyRow:nth-child(2) .key{ background:var(--keyMint); }
+.keyRow:nth-child(3) .key{ background:var(--keyPeach); }
+
+.key.wide{ background:#f0f0f0 !important; }
+.key:active{ transform:scale(0.96); }
+
+.hint{
+  width:min(900px, 96vw);
+  margin:10px auto 0;
+  font-size:13px;
+  opacity:0.7;
+  text-align:center;
+  max-width:640px;
+  line-height:1.2;
+}
+
+/* ===== LEGAL LINE ===== */
+.legal{
+  width:min(900px, 96vw);
+  margin:8px auto 0;
+  font-size:12px;
+  opacity:0.55;
+  text-align:center;
+  line-height:1.2;
+}
+
+/* ===== OPENING + INSTRUCTIONS SCREENS ===== */
+.screen{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:22px 14px;
+  background:
+    radial-gradient(900px 560px at 50% 20%, rgba(0,0,0,0.05), rgba(0,0,0,0) 55%),
+    rgba(246,246,245,0.98);
+  backdrop-filter: blur(8px);
+}
+
+.screen.hidden{ display:none; }
+
+.panel{
+  width:min(760px, 92vw);
+  border-radius:22px;
+  padding:22px 18px;
+  box-shadow: 0 22px 60px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.55);
+  background: rgba(255,255,255,0.55);
+}
+
+.panelInner{
+  border:2px solid rgba(17,17,17,0.10);
+  border-radius:18px;
+  padding:18px 16px;
+  background: rgba(255,255,255,0.55);
+}
+
+.stack{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:14px;
+  text-align:center;
+}
+
+/* BIG opening logo tiles */
+.bigLogo{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  justify-content:center;
+  padding:10px 0 6px;
+  flex-wrap:wrap;
+}
+
+.bigLogoTile{
+  width:calc(var(--logoTile) * 1.45);
+  height:calc(var(--logoTile) * 1.45);
+  perspective:900px;
+}
+
+.bigInner{
+  width:100%;
+  height:100%;
+  transform-style:preserve-3d;
+  transition:transform var(--flipMs) cubic-bezier(.2,.7,.3,1);
+}
+
+.bigFace{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:2px solid var(--ink);
+  border-radius:16px;
+  font-weight:1000;
+  letter-spacing:0.5px;
+  background:var(--tile);
+  box-shadow: 0 12px 22px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.8);
+  backface-visibility:hidden;
+  font-size:calc(var(--logoTile) * 0.78);
+}
+
+.bigFace::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  border-radius:inherit;
+  background: radial-gradient(160px 90px at 26% 18%, rgba(255,255,255,0.75), rgba(255,255,255,0) 62%);
+  opacity:0.85;
+  pointer-events:none;
+}
+
+.bigBack{ transform:rotateX(180deg); }
+
+.bigLogoTile.t0 .bigFace{ background:var(--c0); }
+.bigLogoTile.t1 .bigFace{ background:var(--c1); }
+.bigLogoTile.t2 .bigFace{ background:var(--c2); }
+.bigLogoTile.t3 .bigFace{ background:var(--c3); }
+.bigLogoTile.t4 .bigFace{ background:var(--c4); }
+
+.bigLogoTile.flipped .bigInner{ transform:rotateX(180deg); }
+
+.byline{
+  font-size:13px;
+  opacity:0.72;
+  margin-top:-4px;
+}
+
+.subText{
+  opacity:0.78;
+  font-size:14px;
+  line-height:1.35;
+  max-width:520px;
+  margin:0 auto;
+}
+
+.btnRow{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  margin-top:14px;
+  flex-wrap:wrap;
+}
+
+.btn{
+  border:2px solid #111;
+  border-radius:14px;
+  padding:12px 16px;
+  font-weight:1000;
+  cursor:pointer;
+  user-select:none;
+  background: #fff;
+  box-shadow:0 12px 22px rgba(0,0,0,0.10);
+}
+
+/* CHANGED: start + lets go buttons use winning green */
+.btn.green{
+  background: var(--solved);
+  border-color: var(--solved);
+  color:#fff;
+}
+
+.btn:active{ transform:scale(0.98); }
+
+.rules{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:12px;
+  text-align:left;
+  max-width:560px;
+  margin-left:auto;
+  margin-right:auto;
+}
+
+.rule{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  font-size:14px;
+  line-height:1.35;
+}
+
+.dot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  margin-top:5px;
+  background:#111;
+  flex:0 0 auto;
+}
+
+.smallNote{
+  margin-top:12px;
+  font-size:12.5px;
+  opacity:0.7;
+  text-align:center;
+}
+
+/* ===== Toast ===== */
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:92px;
+  transform:translateX(-50%);
+  z-index:10001;
+  background: rgba(17,17,17,0.92);
+  color:#fff;
+  border-radius:999px;
+  padding:10px 14px;
+  font-weight:900;
+  font-size:13px;
+  box-shadow:0 16px 40px rgba(0,0,0,0.18);
+  display:none;
+  max-width:min(560px, 92vw);
+  text-align:center;
+}
+.toast.show{ display:block; }
+
+/* ===== HELP INFO MODAL ===== */
+.modal{
+  position:fixed;
+  inset:0;
+  z-index:10002;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px 14px;
+  background: rgba(246,246,245,0.55);
+  backdrop-filter: blur(var(--modalBlur));
+}
+.modal.hidden{ display:none; }
+
+.modalCard{
+  width:min(720px, 94vw);
+  border-radius:22px;
+  border:2px solid rgba(17,17,17,0.12);
+  background: rgba(255,255,255,0.70);
+  box-shadow: 0 26px 70px rgba(0,0,0,0.14), inset 0 1px 0 rgba(255,255,255,0.65);
+  position:relative;
+  overflow:hidden;
+}
+.modalCard::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  border-radius:inherit;
+  background: radial-gradient(520px 240px at 24% 10%, rgba(255,255,255,0.80), rgba(255,255,255,0) 60%);
+  opacity:0.65;
+  pointer-events:none;
+}
+.modalInner{
+  padding:18px 16px 16px;
+}
+.modalTop{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:8px;
+}
+.modalTitle{
+  font-weight:1000;
+  letter-spacing:0.4px;
+  font-size:20px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color: var(--ink);
+  opacity: 1;
+}
+.modalX{
+  border:2px solid #111;
+  border-radius:14px;
+  width:40px;
+  height:40px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:1000;
+  cursor:pointer;
+  user-select:none;
+
+  /* CHANGED: X box should be white */
+  background: #ffffff;
+
+  box-shadow:0 12px 22px rgba(0,0,0,0.10);
+}
+.modalX:active{ transform:scale(0.98); }
+
+.modalText{
+  font-size:14px;
+  line-height:1.45;
+  opacity:0.90;
+  margin:8px 0 0;
+}
+
+.modalList{
+  margin:12px 0 0;
+  padding:0;
+  list-style:none;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.modalItem{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+}
+.modalBullet{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  margin-top:6px;
+  background: var(--solved);
+  flex:0 0 auto;
+}
+
+.modalFooter{
+  display:flex;
+  justify-content:center;
+  margin-top:14px;
+}
+.modalBtn{
+  border:2px solid #111;
+  border-radius:14px;
+  padding:12px 16px;
+  font-weight:1000;
+  cursor:pointer;
+  user-select:none;
+
+  /* CHANGED: Got it button should be winning green */
+  background: var(--solved);
+  border-color: var(--solved);
+  color:#fff;
+
+  box-shadow:0 12px 22px rgba(0,0,0,0.10);
+}
+.modalBtn:active{ transform:scale(0.98); }
+
+kbd{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-weight:900;
+  font-size:12px;
+  padding:2px 6px;
+  border:2px solid #111;
+  border-radius:10px;
+  background:rgba(255,255,255,0.85);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.65);
+}
+/* === Ad Gate === */
+.adgate.hidden{ display:none; }
+
+.adgate{
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(6px);
+}
+
+.adgate-card{
+  width: min(520px, 92vw);
+  border-radius: 18px;
+  padding: 18px 18px 14px;
+  background: #fff;
+  color: #111;
+  box-shadow: 0 20px 60px rgba(0,0,0,.35);
+}
+
+.adgate-title{
+  font-weight: 800;
+  font-size: 18px;
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+
+.adgate-sub{
+  font-size: 14px;
+  opacity: .85;
+  margin-bottom: 14px;
+}
+
+.adgate-adbox{
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,.12);
+  background: rgba(0,0,0,.03);
+  padding: 12px;
+  margin-bottom: 14px;
+}
+
+.adgate-adlabel{
+  font-size: 12px;
+  opacity: .6;
+  margin-bottom: 8px;
+}
+
+.adgate-adfake{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  min-height: 52px;
+}
+
+.adgate-adtext{
+  font-size: 14px;
+  opacity: .85;
+}
+
+.adgate-spinner{
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(0,0,0,.18);
+  border-top-color: rgba(0,0,0,.55);
+  animation: adspin 1s linear infinite;
+}
+
+@keyframes adspin{
+  to{ transform: rotate(360deg); }
+}
+
+.adgate-actions{
+  display:flex;
+  justify-content:flex-end;
+}
+
+.adgate-btn{
+  appearance: none;
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.adgate-btn:disabled{
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.adgate-fineprint{
+  margin-top: 10px;
+  font-size: 12px;
+  opacity: .6;
+}
+
+</style>
+</head>
+
+<body>
+<div id="app">
+
+  <!-- OPENING SCREEN -->
+  <div class="screen" id="introScreen" aria-label="Opening screen">
+    <div class="panel">
+      <div class="panelInner">
+        <div class="stack">
+          <div class="bigLogo" id="bigLogo"></div>
+
+          <div class="byline">
+            A game by Noisy Fox Studio · © 2026 Noisy Fox Studio. All rights reserved.
+          </div>
+
+          <p class="subText">Tap to begin.</p>
+          <div class="btnRow">
+            <!-- CHANGED: make button green -->
+            <div class="btn green" id="introTap">TAP TO START</div>
+          </div>
+          <div class="smallNote">Sound is best with your volume up 🔊</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSTRUCTIONS SCREEN -->
+  <div class="screen hidden" id="howScreen" aria-label="Instructions screen">
+    <div class="panel">
+      <div class="panelInner">
+        <div class="stack">
+          <div class="logo" aria-label="Yippee logo (instructions)">
+            <div class="logoTile t0">Y</div>
+            <div class="logoTile t1">I</div>
+            <div class="logoTile t2">P</div>
+            <div class="logoTile t3">P</div>
+            <div class="logoTile t4">E</div>
+            <div class="logoTile t0">E</div>
+          </div>
+
+          <div style="font-weight:1000; letter-spacing:0.4px; font-size:22px; margin:6px 0 0;">How to play</div>
+
+          <div class="rules">
+            <div class="rule"><span class="dot"></span><span>The word across the middle is the <b>ANCHOR</b>. It’s the theme for today.</span></div>
+            <div class="rule"><span class="dot"></span><span>Each column is a word that’s <b>related to the anchor</b>.</span></div>
+            <div class="rule"><span class="dot"></span><span>The anchor <b>gives you one letter</b> to fit into each answer.</span></div>
+            <div class="rule"><span class="dot"></span><span>Fill the blanks <b>above</b> and <b>below</b> that anchor letter.</span></div>
+            <div class="rule"><span class="dot"></span><span>Press <b>ENTER</b> to submit.</span></div>
+            <div class="rule"><span class="dot"></span><span><b>HELP</b> reveals the correct letter on a tile. You get <b>3</b> per day.</span></div>
+          </div>
+
+          <div class="btnRow">
+            <!-- CHANGED: make button green -->
+            <div class="btn green" id="letsGo">LET’S GO</div>
+          </div>
+
+          <div class="smallNote">Tip: you can use your physical keyboard too.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HELP INFO MODAL -->
+  <div class="modal hidden" id="helpModal" aria-label="Help information">
+    <div class="modalCard" id="helpModalCard" role="dialog" aria-modal="true" aria-labelledby="helpModalTitle">
+      <div class="modalInner">
+        <div class="modalTop">
+          <div class="modalTitle" id="helpModalTitle">
+            <!-- CHANGED: modal ? tile should be white (override class background) -->
+            <span class="helpInfoBtn" style="width:34px;height:34px;cursor:default;background:#fff;" aria-hidden="true">?</span>
+            How HELP works
+          </div>
+          <div class="modalX" id="helpModalX" role="button" aria-label="Close help info">✕</div>
+        </div>
+
+        <div class="modalText">
+          You have <b>3</b> help tiles per day. Each one reveals a correct letter when you’re stuck.
+        </div>
+
+        <ul class="modalList">
+          <li class="modalItem">
+            <span class="modalBullet" aria-hidden="true"></span>
+            <span>Click one of the <b>green help tiles</b> (top right) to arm HELP.</span>
+          </li>
+          <li class="modalItem">
+            <span class="modalBullet" aria-hidden="true"></span>
+            <span>Then click any blank tile on the board to reveal the correct letter.</span>
+          </li>
+          <li class="modalItem">
+            <span class="modalBullet" aria-hidden="true"></span>
+            <span>The revealed tile flips <b>green</b> and becomes <b>locked</b>.</span>
+          </li>
+          <li class="modalItem">
+            <span class="modalBullet" aria-hidden="true"></span>
+            <span>The help tile you used flips and becomes <b>empty</b> (spent).</span>
+          </li>
+          <li class="modalItem">
+            <span class="modalBullet" aria-hidden="true"></span>
+            <span>To cancel after arming, press <kbd>ESC</kbd>.</span>
+          </li>
+        </ul>
+
+        <div class="modalFooter">
+          <div class="modalBtn" id="helpModalGotIt" role="button">Got it</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <!-- GAME -->
+  <header>
+    <div class="logo" aria-label="Yippee logo">
+      <div class="logoTile t0">Y</div>
+      <div class="logoTile t1">I</div>
+      <div class="logoTile t2">P</div>
+      <div class="logoTile t3">P</div>
+      <div class="logoTile t4">E</div>
+      <div class="logoTile t0">E</div>
+    </div>
+
+    <!-- HELP: info button + 3 spendable tiles -->
+    <div class="helpCluster" id="helpCluster" aria-label="Help controls">
+      <div class="helpInfoBtn" id="helpInfoBtn" role="button" aria-label="Help info">?</div>
+
+      <div class="helpUses" aria-label="Help uses">
+        <div class="miniHelpTile" id="helpUse0" data-slot="0" role="button" aria-label="Use help 1">
+          <div class="miniHelpInner">
+            <div class="miniHelpFace miniHelpFront"></div>
+            <div class="miniHelpFace miniHelpBack"></div>
+          </div>
+        </div>
+        <div class="miniHelpTile" id="helpUse1" data-slot="1" role="button" aria-label="Use help 2">
+          <div class="miniHelpInner">
+            <div class="miniHelpFace miniHelpFront"></div>
+            <div class="miniHelpFace miniHelpBack"></div>
+          </div>
+        </div>
+        <div class="miniHelpTile" id="helpUse2" data-slot="2" role="button" aria-label="Use help 3">
+          <div class="miniHelpInner">
+            <div class="miniHelpFace miniHelpFront"></div>
+            <div class="miniHelpFace miniHelpBack"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div id="wrap">
+      <div class="board" id="board"></div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="keyboard" id="keyboard"></div>
+    <div class="hint">
+      Fill the tiles in a column (above + below).
+    </div>
+
+    <div class="legal">
+      A game by Noisy Fox Studio · © 2026 Noisy Fox Studio. All rights reserved.
+    </div>
+  </footer>
+
+</div>
+
+<script>
+/* ===== AUTO-SIZE ===== */
+function setVars(tile){
+  const r = document.documentElement.style;
+
+  const logo = Math.max(34, Math.round(tile * 0.92));
+  const gap = Math.max(8, Math.round(tile * 0.21));
+  const colGap = Math.max(8, Math.round(tile * 0.18));
+  const colPadY = Math.max(10, Math.round(tile * 0.25));
+  const colPadX = Math.max(8, Math.round(tile * 0.18));
+
+  const keyPadY = Math.max(8, Math.round(tile * 0.23));
+  const keyPadX = Math.max(8, Math.round(tile * 0.20));
+  const keyMinW = Math.max(26, Math.round(tile * 0.60));
+  const keyFont = Math.max(11, Math.round(tile * 0.25));
+
+  r.setProperty("--tileSize", tile + "px");
+  r.setProperty("--logoTile", logo + "px");
+  r.setProperty("--gap", gap + "px");
+  r.setProperty("--colGap", colGap + "px");
+  r.setProperty("--colPadY", colPadY + "px");
+  r.setProperty("--colPadX", colPadX + "px");
+  r.setProperty("--keyPadY", keyPadY + "px");
+  r.setProperty("--keyPadX", keyPadX + "px");
+  r.setProperty("--keyMinW", keyMinW + "px");
+  r.setProperty("--keyFont", keyFont + "px");
+}
+
+function fitLayout(){
+  const main = document.querySelector("main");
+  const boardEl = document.getElementById("board");
+  if(!main || !boardEl) return;
+
+  let lo = 32, hi = 56, best = 32;
+  for(let iter=0; iter<12; iter++){
+    const mid = Math.floor((lo+hi)/2);
+    setVars(mid);
+    const mainH = main.clientHeight;
+    const boardH = boardEl.getBoundingClientRect().height;
+    if(boardH <= mainH){
+      best = mid;
+      lo = mid + 1;
+    }else{
+      hi = mid - 1;
+    }
+  }
+  setVars(best);
+}
+
+/* ===== AUDIO ===== */
+let audioCtx = null;
+function ensureAudio(){
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if(audioCtx.state === "suspended") audioCtx.resume().catch(()=>{});
+}
+
+function clickFeedback(){
+  if(navigator.vibrate) navigator.vibrate(8);
+  try{
+    ensureAudio();
+    const t = audioCtx.currentTime;
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = "square";
+    o.frequency.setValueAtTime(980, t);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.03, t+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+0.06);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(t+0.065);
+  }catch(_){}
+}
+
+/* NEW: HELP SOUNDS */
+function playHelpArm(){
+  try{
+    ensureAudio();
+    const t = audioCtx.currentTime;
+
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = "sine";
+
+    o.frequency.setValueAtTime(740, t);
+    o.frequency.exponentialRampToValueAtTime(990, t + 0.08);
+    o.frequency.exponentialRampToValueAtTime(1320, t + 0.16);
+
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.14, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.20);
+
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(t);
+    o.stop(t + 0.22);
+  }catch(_){}
+}
+
+function playHelpCancel(){
+  try{
+    ensureAudio();
+    const t = audioCtx.currentTime;
+
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = "triangle";
+
+    o.frequency.setValueAtTime(420, t);
+    o.frequency.exponentialRampToValueAtTime(220, t + 0.16);
+
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.10, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.20);
+
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(t);
+    o.stop(t + 0.22);
+  }catch(_){}
+}
+
+function playHelpUse(){
+  try{
+    ensureAudio();
+    const t = audioCtx.currentTime;
+    const seq = [
+      { f: 988,  at: 0.00, d: 0.10 },
+      { f: 1319, at: 0.10, d: 0.12 },
+      { f: 1568, at: 0.22, d: 0.14 }
+    ];
+
+    seq.forEach(n=>{
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = "sine";
+      o.frequency.setValueAtTime(n.f, t + n.at);
+      g.gain.setValueAtTime(0.0001, t + n.at);
+      g.gain.exponentialRampToValueAtTime(0.16, t + n.at + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + n.at + n.d);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(t + n.at);
+      o.stop(t + n.at + n.d + 0.02);
+    });
+  }catch(_){}
+}
+
+function playHappy(){
+  try{
+    ensureAudio();
+    const t = audioCtx.currentTime;
+    const notes = [
+      {f:784, at:0.00, d:0.10},
+      {f:988, at:0.10, d:0.10},
+      {f:1319,at:0.20, d:0.18}
+    ];
+    notes.forEach(n=>{
+      const o=audioCtx.createOscillator();
+      const g=audioCtx.createGain();
+      o.type="sine";
+      o.frequency.setValueAtTime(n.f, t+n.at);
+      g.gain.setValueAtTime(0.0001, t+n.at);
+      g.gain.exponentialRampToValueAtTime(0.12, t+n.at+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t+n.at+n.d);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(t+n.at);
+      o.stop(t+n.at+n.d+0.02);
+    });
+  }catch(_){}
+}
+
+function playCelebrate(){
+  try{
+    ensureAudio();
+    const t = audioCtx.currentTime;
+    const seq = [
+      {f:523.25, at:0.00, d:0.10},
+      {f:659.25, at:0.10, d:0.10},
+      {f:783.99, at:0.20, d:0.10},
+      {f:1046.5, at:0.30, d:0.14},
+      {f:1318.5, at:0.44, d:0.18}
+    ];
+    seq.forEach(n=>{
+      const o=audioCtx.createOscillator();
+      const g=audioCtx.createGain();
+      o.type="triangle";
+      o.frequency.setValueAtTime(n.f, t+n.at);
+      g.gain.setValueAtTime(0.0001, t+n.at);
+      g.gain.exponentialRampToValueAtTime(0.14, t+n.at+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t+n.at+n.d);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(t+n.at);
+      o.stop(t+n.at+n.d+0.02);
+    });
+
+    const o2=audioCtx.createOscillator();
+    const g2=audioCtx.createGain();
+    o2.type="sine";
+    o2.frequency.setValueAtTime(110, t+0.00);
+    g2.gain.setValueAtTime(0.0001, t+0.00);
+    g2.gain.exponentialRampToValueAtTime(0.10, t+0.01);
+    g2.gain.exponentialRampToValueAtTime(0.0001, t+0.20);
+    o2.connect(g2); g2.connect(audioCtx.destination);
+    o2.start(t+0.00);
+    o2.stop(t+0.22);
+  }catch(_){}
+}
+
+function playFinaleHappy(){
+  try{
+    ensureAudio();
+    const t = audioCtx.currentTime;
+    const seq = [
+      {f:659.25, at:0.00, d:0.14},
+      {f:783.99, at:0.10, d:0.14},
+      {f:988.00, at:0.20, d:0.14},
+      {f:1318.5, at:0.30, d:0.18},
+      {f:1568.0, at:0.44, d:0.20}
+    ];
+
+    seq.forEach(n=>{
+      const o=audioCtx.createOscillator();
+      const g=audioCtx.createGain();
+      o.type="triangle";
+      o.frequency.setValueAtTime(n.f, t+n.at);
+      g.gain.setValueAtTime(0.0001, t+n.at);
+      g.gain.exponentialRampToValueAtTime(0.18, t+n.at+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t+n.at+n.d);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(t+n.at);
+      o.stop(t+n.at+n.d+0.03);
+    });
+
+    for(let i=0;i<8;i++){
+      const o=audioCtx.createOscillator();
+      const g=audioCtx.createGain();
+      o.type="sine";
+      o.frequency.setValueAtTime(1800 + i*120, t + 0.08 + i*0.03);
+      g.gain.setValueAtTime(0.0001, t + 0.08 + i*0.03);
+      g.gain.exponentialRampToValueAtTime(0.04, t + 0.10 + i*0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22 + i*0.03);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(t + 0.08 + i*0.03);
+      o.stop(t + 0.25 + i*0.03);
+    }
+
+    const o2=audioCtx.createOscillator();
+    const g2=audioCtx.createGain();
+    o2.type="sine";
+    o2.frequency.setValueAtTime(96, t+0.00);
+    g2.gain.setValueAtTime(0.0001, t+0.00);
+    g2.gain.exponentialRampToValueAtTime(0.14, t+0.02);
+    g2.gain.exponentialRampToValueAtTime(0.0001, t+0.25);
+    o2.connect(g2); g2.connect(audioCtx.destination);
+    o2.start(t+0.00);
+    o2.stop(t+0.27);
+  }catch(_){}
+}
+
+/* ===== HELPERS ===== */
+function wait(ms){ return new Promise(r=>setTimeout(r, ms)); }
+
+/* ===== HEADER LOGO SPIN ===== */
+function spinHeaderLogo(){
+  const tiles = [...document.querySelectorAll("header .logoTile")];
+  if(!tiles.length) return;
+
+  tiles.forEach(t=>{
+    t.classList.remove("spin");
+    t.style.animationDelay = "0ms";
+  });
+  void document.body.offsetWidth;
+
+  tiles.forEach((t,i)=>{
+    t.style.animationDelay = (i * 120) + "ms";
+    t.classList.add("spin");
+  });
+
+  const total = (parseInt(getComputedStyle(document.documentElement).getPropertyValue("--flipMs")) || 720) + (tiles.length-1)*120 + 80;
+  setTimeout(()=>{
+    tiles.forEach(t=>{
+      t.classList.remove("spin");
+      t.style.animationDelay = "";
+    });
+  }, total);
+}
+
+/* ===== OPENING LOGO ===== */
+const bigLogo = document.getElementById("bigLogo");
+const bigLetters = ["Y","I","P","P","E","E"];
+const bigClasses = ["t0","t1","t2","t3","t4","t0"];
+
+function buildBigLogo(){
+  bigLogo.innerHTML = "";
+  for(let i=0;i<6;i++){
+    const tile = document.createElement("div");
+    tile.className = "bigLogoTile " + bigClasses[i];
+
+    const inner = document.createElement("div");
+    inner.className = "bigInner";
+
+    const front = document.createElement("div");
+    front.className = "bigFace bigFront";
+    front.textContent = "";
+
+    const back = document.createElement("div");
+    back.className = "bigFace bigBack";
+    back.textContent = bigLetters[i];
+
+    inner.append(front, back);
+    tile.append(inner);
+    bigLogo.append(tile);
+  }
+}
+
+async function playBigIntroFlip(){
+  const tiles = [...bigLogo.querySelectorAll(".bigLogoTile")];
+  tiles.forEach(t=>t.classList.remove("flipped"));
+  await wait(40);
+
+  const delay = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--introDelayMs")) || 210;
+  for(const t of tiles){
+    t.classList.add("flipped");
+    await wait(delay);
+  }
+}
+
+/* ===== OPENING + INSTRUCTIONS FLOW ===== */
+const introScreen = document.getElementById("introScreen");
+const howScreen = document.getElementById("howScreen");
+const introTap = document.getElementById("introTap");
+const letsGo = document.getElementById("letsGo");
+
+/* ===== DATE + PACK ===== */
+function localDateKey(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+// === Ad Gate (once per local day) ===
+function adGateStorageKey(){
+  return "yippee_adgate_passed_" + localDateKey();
+}
+
+function hasPassedAdGateToday(){
+  return localStorage.getItem(adGateStorageKey()) === "1";
+}
+
+function markAdGatePassedToday(){
+  localStorage.setItem(adGateStorageKey(), "1");
+}
+
+function showAdGate(){
+  const gate = document.getElementById("adGate");
+  const btn  = document.getElementById("adGateContinue");
+  const txt  = gate.querySelector(".adgate-adtext");
+
+  // show overlay
+  gate.classList.remove("hidden");
+  gate.setAttribute("aria-hidden","false");
+
+  // simulate ad loading (placeholder)
+  btn.disabled = true;
+  txt.textContent = "Loading ad…";
+
+  const MIN_WAIT_MS = 9000; // short, fair wait
+  window.setTimeout(() => {
+    txt.textContent = "Ad ready. You can continue.";
+    btn.disabled = false;
+    btn.focus();
+  }, MIN_WAIT_MS);
+
+  btn.onclick = () => {
+    markAdGatePassedToday();
+    gate.classList.add("hidden");
+    gate.setAttribute("aria-hidden","true");
+  };
+}
+
+
+function onlyLettersUpper(s){
+  return (s || "").toUpperCase().replace(/[^A-Z]/g,"");
+}
+
+/* ===== PUZZLE PACK ===== */
+const PUZZLE_PACK = {
+  "meta": {
+    "name": "Yippee Launch Pack",
+    "studio": "Noisy Fox Studio",
+    "created": "2026-01-19",
+    "version": 1
+  },
+  "puzzles": [
+    {
+      "date": "2026-01-31",
+      "title": "Space",
+      "anchor": "SPACE",
+      "answers": [
+        { "col": 0, "word": "ASTEROID",  "hookIndex": 1 },
+        { "col": 1, "word": "PLANET",    "hookIndex": 0 },
+        { "col": 2, "word": "GALAXY",    "hookIndex": 1 },
+        { "col": 3, "word": "ROCKET",    "hookIndex": 2 },
+        { "col": 4, "word": "SATELLITE", "hookIndex": 3 }
+      ]
+    },
+    {
+      "date": "2026-02-01",
+      "title": "Music",
+      "anchor": "MUSIC",
+      "answers": [
+        { "col": 0, "word": "MELODY", "hookIndex": 0 },
+        { "col": 1, "word": "TUNE",   "hookIndex": 1 },
+        { "col": 2, "word": "SONG",   "hookIndex": 0 },
+        { "col": 3, "word": "PIANO",  "hookIndex": 1 },
+        { "col": 4, "word": "CHORD",  "hookIndex": 0 }
+      ]
+    },
+    {
+      "date": "2026-02-02",
+      "title": "Train",
+      "anchor": "TRAIN",
+      "answers": [
+        { "col": 0, "word": "TRACK",    "hookIndex": 0 },
+        { "col": 1, "word": "RAIL",     "hookIndex": 0 },
+        { "col": 2, "word": "PLATFORM", "hookIndex": 2 },
+        { "col": 3, "word": "CARRIAGE", "hookIndex": 4 },
+        { "col": 4, "word": "ENGINE",   "hookIndex": 1 }
+      ]
+    },
+    {
+      "date": "2026-02-03",
+      "title": "Beach",
+      "anchor": "BEACH",
+      "answers": [
+        { "col": 0, "word": "BOAT",  "hookIndex": 0 },
+        { "col": 1, "word": "OCEAN", "hookIndex": 2 },
+        { "col": 2, "word": "SAND",  "hookIndex": 1 },
+        { "col": 3, "word": "COAST", "hookIndex": 0 },
+        { "col": 4, "word": "SHELL", "hookIndex": 1 }
+      ]
+    },
+    {
+      "date": "2026-02-04",
+      "title": "Apple",
+      "anchor": "APPLE",
+      "answers": [
+        { "col": 0, "word": "ORCHARD", "hookIndex": 4 },
+        { "col": 1, "word": "RIPE",    "hookIndex": 2 },
+        { "col": 2, "word": "PIPS",    "hookIndex": 2 },
+        { "col": 3, "word": "PEEL",    "hookIndex": 3 },
+        { "col": 4, "word": "ROTTEN",  "hookIndex": 4 }
+      ]
+    }
+  ]
+};
+
+function pickPuzzleForToday(){
+  const key = localDateKey();
+  const list = (PUZZLE_PACK && Array.isArray(PUZZLE_PACK.puzzles)) ? PUZZLE_PACK.puzzles : [];
+  const hit = list.find(p => (p.date || "") === key);
+  const first = list[0] || null;
+
+  const raw = hit || first || {
+    anchor: "PLANT",
+    answers: [
+      {col:0,word:"PETAL",hookIndex:0},
+      {col:1,word:"LEAF",hookIndex:0},
+      {col:2,word:"GARDEN",hookIndex:1},
+      {col:3,word:"NECTAR",hookIndex:0},
+      {col:4,word:"STEM",hookIndex:1}
+    ]
+  };
+
+  const anchor = onlyLettersUpper(raw.anchor).slice(0,5);
+  const answers = (raw.answers || []).slice(0,5).map((a, i)=>({
+    col: typeof a.col === "number" ? a.col : i,
+    word: onlyLettersUpper(a.word || ""),
+    hookIndex: Number.isFinite(a.hookIndex) ? a.hookIndex : 0
+  }));
+
+  return { anchor, answers, title: raw.title || "", date: raw.date || "" };
+}
+
+/* ===== GAME ===== */
+let puzzle = pickPuzzleForToday();
+
+const board = document.getElementById("board");
+const keyboard = document.getElementById("keyboard");
+
+let selectedTile = null;
+let isAnimating = false;
+
+/* ===== TOAST ===== */
+const toast = document.getElementById("toast");
+function showToast(msg){
+  toast.textContent = msg;
+  toast.classList.add("show");
+  setTimeout(()=>toast.classList.remove("show"), 1600);
+}
+
+/* ===== HELP INFO MODAL (question mark button) ===== */
+const helpModal = document.getElementById("helpModal");
+const helpModalCard = document.getElementById("helpModalCard");
+const helpModalX = document.getElementById("helpModalX");
+const helpModalGotIt = document.getElementById("helpModalGotIt");
+const helpInfoBtn = document.getElementById("helpInfoBtn");
+
+let helpModalOpen = false;
+
+function showHelpModal(){
+  helpModal.classList.remove("hidden");
+  helpModalOpen = true;
+}
+function hideHelpModal(){
+  helpModal.classList.add("hidden");
+  helpModalOpen = false;
+}
+
+helpInfoBtn.addEventListener("click", ()=>{
+  if(!introScreen.classList.contains("hidden") || !howScreen.classList.contains("hidden")) return;
+  clickFeedback();
+  showHelpModal();
+});
+
+helpModal.addEventListener("click",(e)=>{
+  if(e.target === helpModal){
+    clickFeedback();
+    hideHelpModal();
+  }
+});
+helpModalX.addEventListener("click", ()=>{
+  clickFeedback();
+  hideHelpModal();
+});
+helpModalGotIt.addEventListener("click", ()=>{
+  clickFeedback();
+  hideHelpModal();
+});
+helpModalCard.addEventListener("click",(e)=> e.stopPropagation());
+
+/* ===== HELP (3 per day, now controlled by the 3 mini tiles) ===== */
+const helpCluster = document.getElementById("helpCluster");
+const helpUseEls = [
+  document.getElementById("helpUse0"),
+  document.getElementById("helpUse1"),
+  document.getElementById("helpUse2")
+];
+
+let helpArmed = false;
+let armedSlot = null;
+
+function helpStorageKey(){
+  return "yippee_help_used_" + localDateKey();
+}
+
+function getHelpUsed(){
+  return parseInt(localStorage.getItem(helpStorageKey()) || "0", 10);
+}
+function getHelpRemaining(){
+  return Math.max(0, 3 - getHelpUsed());
+}
+function useHelp(){
+  const used = getHelpUsed();
+  localStorage.setItem(helpStorageKey(), String(used + 1));
+}
+
+function updateHelpUI(initial=false){
+  const used = Math.min(3, Math.max(0, getHelpUsed()));
+  // set spent states
+  helpUseEls.forEach((el, i)=>{
+    if(initial) el.classList.add("noAnim");
+    el.classList.toggle("spent", i < used);
+    el.setAttribute("aria-disabled", (i < used) ? "true" : "false");
+  });
+
+  // remove noAnim after paint so future flips animate
+  if(initial){
+    requestAnimationFrame(()=>{
+      helpUseEls.forEach(el=>el.classList.remove("noAnim"));
+    });
+  }
+}
+
+function canUseHelpNow(){
+  if(isAnimating) return false;
+  if(helpModalOpen) return false;
+  if(!introScreen.classList.contains("hidden") || !howScreen.classList.contains("hidden")) return false;
+  return true;
+}
+
+function setHelpArmed(on){
+  helpArmed = on;
+  helpCluster.classList.toggle("armed", helpArmed);
+  if(!helpArmed){
+    armedSlot = null;
+  }
+}
+
+function armHelpFromSlot(slot){
+  if(!canUseHelpNow()) return;
+
+  const used = getHelpUsed();
+  const remaining = getHelpRemaining();
+  if(remaining <= 0) return;
+
+  // slot must be one of the available ones (i >= used)
+  if(slot < used || slot > 2) return;
+
+  armedSlot = slot;
+  setHelpArmed(true);
+
+  /* NEW: ARM SOUND */
+  playHelpArm();
+
+  showToast("Help armed: click a tile (ESC to cancel)");
+}
+
+helpUseEls.forEach(el=>{
+  el.addEventListener("click", ()=>{
+    if(el.getAttribute("aria-disabled") === "true") return;
+    clickFeedback();
+    armHelpFromSlot(parseInt(el.dataset.slot, 10));
+  });
+});
+
+function cancelHelp(){
+  setHelpArmed(false);
+}
+
+window.addEventListener("keydown",(e)=>{
+  if(e.key === "Escape"){
+    if(helpModalOpen){
+      clickFeedback();
+      hideHelpModal();
+      return;
+    }
+    if(helpArmed){
+      cancelHelp();
+
+      /* NEW: CANCEL SOUND */
+      playHelpCancel();
+
+      showToast("Help cancelled");
+      return;
+    }
+  }
+});
+
+/* Given a tile, compute the correct letter for that tile position */
+function correctLetterForTile(tile){
+  const col = Number(tile.dataset.col);
+  const tiles = tilesOf(col);
+  const idx = tiles.indexOf(tile);
+  if(idx < 0) return null;
+
+  const ans = puzzle.answers[col];
+  const word = ans.word;
+  const hook = ans.hookIndex;
+
+  const wordIndex = (idx < hook) ? idx : (idx + 1);
+  const ch = word[wordIndex] || null;
+  return ch;
+}
+
+function spendAndFlipMiniTile(){
+  const usedBefore = getHelpUsed();
+  const slotToFlip = (armedSlot !== null) ? armedSlot : usedBefore;
+
+  useHelp();
+
+  const el = helpUseEls[slotToFlip];
+  if(el){
+    el.classList.add("spent");
+    el.setAttribute("aria-disabled", "true");
+  }
+
+  updateHelpUI(false);
+}
+
+async function revealHelpOnTile(tile){
+  const remaining = getHelpRemaining();
+  if(remaining <= 0) return;
+
+  const ch = correctLetterForTile(tile);
+  if(!ch) return;
+
+  tile.querySelector(".front").textContent = ch;
+  tile.querySelector(".back").textContent = ch;
+
+  tile.classList.remove("wrongBack");
+  tile.classList.add("solvedBack");
+  tile.classList.add("flipped");
+  tile.classList.add("locked");
+  tile.classList.add("helpLocked");
+
+  spendAndFlipMiniTile();
+
+  setHelpArmed(false);
+
+  playHelpUse();
+
+  showToast("Help used ✨");
+
+  const tilesInCol = tilesOf(tile.dataset.col);
+  const i = tilesInCol.indexOf(tile);
+  if(i >= 0 && i < tilesInCol.length - 1){
+    setSelected(tilesInCol[i+1]);
+  }else{
+    setSelected(tile);
+  }
+}
+
+/* ===== TILES ===== */
+function makeTile({text="",anchor=false,spacer=false,col}){
+  const t=document.createElement("div");
+  t.className="tile"+(anchor?" anchor":"")+(spacer?" spacer":"");
+  t.dataset.col=col;
+
+  const i=document.createElement("div");
+  i.className="tileInner";
+
+  const f=document.createElement("div");
+  f.className="face front";
+  f.textContent=text;
+
+  const b=document.createElement("div");
+  b.className="face back";
+  b.textContent=text;
+
+  i.append(f,b);
+  t.append(i);
+
+  if(!anchor && !spacer){
+    t.onclick=async ()=>{
+      if(isAnimating || t.classList.contains("locked")) return;
+
+      if(helpArmed){
+        setHelpArmed(false);
+
+        if(selectedTile) selectedTile.classList.remove("selected");
+        selectedTile = t;
+        t.classList.add("selected");
+
+        clickFeedback();
+        await revealHelpOnTile(t);
+        return;
+      }
+
+      if(selectedTile) selectedTile.classList.remove("selected");
+      selectedTile=t;
+      t.classList.add("selected");
+      clickFeedback();
+    };
+  }
+  return t;
+}
+
+function renderBoard(){
+  board.innerHTML="";
+  const cols=puzzle.anchor.split("").map((l,i)=>{
+    const a=puzzle.answers[i];
+    return {i,letter:l,above:a.hookIndex,below:a.word.length-a.hookIndex-1};
+  });
+  const maxAbove=Math.max(...cols.map(c=>c.above));
+
+  cols.forEach(c=>{
+    const colEl=document.createElement("div");
+    colEl.className="col";
+    colEl.dataset.col=c.i;
+
+    for(let i=0;i<maxAbove-c.above;i++) colEl.append(makeTile({spacer:true,col:c.i}));
+    for(let i=0;i<c.above;i++) colEl.append(makeTile({col:c.i}));
+
+    colEl.append(makeTile({text:c.letter,anchor:true,col:c.i}));
+
+    for(let i=0;i<c.below;i++) colEl.append(makeTile({col:c.i}));
+
+    board.append(colEl);
+  });
+}
+
+function key(label,fn,wide){
+  const k=document.createElement("div");
+  k.className="key"+(wide?" wide":"");
+  k.textContent=label;
+  k.onclick=()=>{ if(!isAnimating){ clickFeedback(); fn(); } };
+  return k;
+}
+
+function buildKeyboard(){
+  const rows=["QWERTYUIOP","ASDFGHJKL","ZXCVBNM"];
+  keyboard.innerHTML="";
+  rows.forEach((letters,r)=>{
+    const row=document.createElement("div");
+    row.className="keyRow";
+    if(r===2) row.append(key("ENTER",submit,true));
+    letters.split("").forEach(l=>row.append(key(l,()=>type(l))));
+    if(r===2) row.append(key("⌫",back,true));
+    keyboard.append(row);
+  });
+}
+
+function setSelected(t){
+  if(selectedTile) selectedTile.classList.remove("selected");
+  selectedTile=t;
+  if(t) t.classList.add("selected");
+}
+
+function tilesOf(col){
+  return [...document.querySelectorAll(`.tile[data-col="${col}"]`)]
+    .filter(t=>!t.classList.contains("anchor")&&!t.classList.contains("spacer"));
+}
+
+function type(l){
+  if(!selectedTile||selectedTile.classList.contains("locked"))return;
+  selectedTile.querySelector(".front").textContent=l;
+  const tiles=tilesOf(selectedTile.dataset.col);
+  const i=tiles.indexOf(selectedTile);
+  if(i<tiles.length-1) setSelected(tiles[i+1]);
+}
+
+function back(){
+  if(!selectedTile||selectedTile.classList.contains("locked"))return;
+  selectedTile.querySelector(".front").textContent="";
+}
+
+/* ===== CASCADE ANIMATION ===== */
+async function cascade(tiles, correct, col){
+  isAnimating = true;
+  setSelected(null);
+
+  tiles.forEach(t=>{
+    t.querySelector(".back").textContent = t.querySelector(".front").textContent;
+
+    if(!t.classList.contains("helpLocked")){
+      t.classList.remove("wrongBack","solvedBack");
+      t.classList.add(correct ? "solvedBack" : "wrongBack");
+    }
+  });
+
+  for(const t of tiles){
+    t.classList.add("flipped");
+    await wait(parseInt(getComputedStyle(document.documentElement).getPropertyValue("--cascadeMs")) || 200);
+  }
+
+  if(correct){
+    playHappy();
+    tiles.forEach(t=>t.classList.add("locked"));
+    isAnimating = false;
+    return;
+  }
+
+  const colEl = document.querySelector(`.col[data-col="${col}"]`);
+  if(colEl){
+    colEl.classList.remove("shake");
+    void colEl.offsetWidth;
+    colEl.classList.add("shake");
+  }
+
+  await wait(parseInt(getComputedStyle(document.documentElement).getPropertyValue("--clearHoldMs")) || 520);
+
+  for(const t of tiles){
+    if(t.classList.contains("helpLocked")){
+      continue;
+    }
+    t.classList.remove("flipped","wrongBack");
+    t.querySelector(".front").textContent = "";
+    await wait(parseInt(getComputedStyle(document.documentElement).getPropertyValue("--unflipCascadeMs")) || 180);
+  }
+
+  isAnimating = false;
+}
+
+/* ===== PUZZLE COMPLETE CHECK ===== */
+function isPuzzleComplete(){
+  for(let c=0; c<puzzle.anchor.length; c++){
+    const tiles = tilesOf(c);
+    if(!tiles.length) return false;
+    if(!tiles.every(t=>t.classList.contains("locked"))) return false;
+  }
+  return true;
+}
+
+let celebrated = false;
+
+/* ===== Finale celebration ===== */
+function allAnswerTiles(){
+  return [...document.querySelectorAll(".tile")]
+    .filter(t=>!t.classList.contains("spacer") && !t.classList.contains("anchor"));
+}
+
+function allAnchorTiles(){
+  return [...document.querySelectorAll(".tile.anchor")];
+}
+
+async function runFinaleCelebration(){
+  isAnimating = true;
+  setSelected(null);
+
+  const happyDurationMs = 420;
+  const startDelay = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--finaleStartDelayMs")) || 80;
+  await wait(happyDurationMs + startDelay);
+
+  playFinaleHappy();
+  playCelebrate();
+
+  const ans = allAnswerTiles();
+  ans.forEach(t=>t.classList.remove("finaleAnswer"));
+
+  const ansStagger = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--finaleAnswerStaggerMs")) || 65;
+  for(let i=0;i<ans.length;i++){
+    ans[i].classList.add("finaleAnswer");
+    await wait(ansStagger);
+  }
+
+  await wait(120);
+  ans.forEach(t=>t.classList.remove("finaleAnswer"));
+
+  const anchors = allAnchorTiles();
+  anchors.forEach(t=>{
+    t.classList.remove("finaleAnchor","anchorGold");
+  });
+
+  anchors.forEach(t=>t.classList.add("anchorGold"));
+
+  const anchorStagger = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--finaleAnswerStaggerMs")) || 65;
+  for (let i = 0; i < anchors.length; i++) {
+    anchors[i].classList.add("finaleAnchor");
+    await wait(anchorStagger);
+  }
+
+  await wait(120);
+  isAnimating = false;
+}
+
+/* ===== SUBMIT ===== */
+async function submit(){
+  if(!selectedTile || isAnimating) return;
+
+  const col = +selectedTile.dataset.col;
+  const tiles = tilesOf(col);
+
+  if(tiles.every(t=>t.classList.contains("locked"))) return;
+  if(!tiles.every(t=>t.querySelector(".front").textContent)) return;
+
+  const hook = puzzle.answers[col].hookIndex;
+  const above = tiles.slice(0,hook).map(t=>t.querySelector(".front").textContent).join("");
+  const below = tiles.slice(hook).map(t=>t.querySelector(".front").textContent).join("");
+  const guess = above + puzzle.anchor[col] + below;
+
+  const correct = guess === puzzle.answers[col].word;
+  await cascade(tiles, correct, col);
+
+  if(!celebrated && isPuzzleComplete()){
+    celebrated = true;
+    runFinaleCelebration();
+  }
+}
+
+/* ===== INIT ===== */
+renderBoard();
+buildKeyboard();
+updateHelpUI(true);
+
+requestAnimationFrame(()=>{ fitLayout(); });
+setTimeout(fitLayout, 80);
+window.addEventListener("resize", ()=>{ fitLayout(); });
+
+const first=document.querySelector(".tile:not(.anchor):not(.spacer)");
+if(first) setSelected(first);
+
+/* ===== PHYSICAL KEYBOARD ===== */
+window.addEventListener("keydown",e=>{
+  if(isAnimating) return;
+  if(helpModalOpen) return;
+
+  if(!introScreen.classList.contains("hidden") || !howScreen.classList.contains("hidden")) return;
+
+  if(e.key==="Enter"){
+    clickFeedback();
+    submit();
+  }else if(e.key==="Backspace"){
+    clickFeedback();
+    back();
+  }else if(/^[a-z]$/i.test(e.key)){
+    clickFeedback();
+    type(e.key.toUpperCase());
+  }
+});
+
+/* ===== SCREEN HANDLERS ===== */
+buildBigLogo();
+
+introScreen.classList.remove("hidden");
+howScreen.classList.add("hidden");
+
+introTap.addEventListener("click", async ()=>{
+  ensureAudio();
+  clickFeedback();
+
+  await playBigIntroFlip();
+  await wait(260);
+
+  introScreen.classList.add("hidden");
+  howScreen.classList.remove("hidden");
+});
+
+letsGo.addEventListener("click", async ()=>{
+if(!hasPassedAdGateToday()){
+  showAdGate();
+  return;
+}
+
+  ensureAudio();
+  clickFeedback();
+
+  howScreen.classList.add("hidden");
+
+  const first=document.querySelector(".tile:not(.anchor):not(.spacer)");
+  if(first) setSelected(first);
+
+  await wait(60);
+  spinHeaderLogo();
+});
+</script>
+<!-- === AD GATE OVERLAY (once per day) === -->
+<div id="adGate" class="adgate hidden" aria-hidden="true">
+  <div class="adgate-card" role="dialog" aria-modal="true" aria-labelledby="adGateTitle">
+    <div class="adgate-title" id="adGateTitle">One quick ad and today’s puzzle is yours.</div>
+    <div class="adgate-sub">Thanks for supporting Yippee 💛</div>
+
+    <!-- Placeholder ad box (swap later for real provider embed) -->
+    <div class="adgate-adbox" id="adGateAdBox">
+      <div class="adgate-adlabel">Advertisement</div>
+      <div class="adgate-adfake">
+        <div class="adgate-spinner"></div>
+        <div class="adgate-adtext">Loading ad…</div>
+      </div>
+    </div>
+
+    <div class="adgate-actions">
+      <button id="adGateContinue" class="adgate-btn" type="button" disabled>
+        Continue
+      </button>
+    </div>
+
+    <div class="adgate-fineprint">This appears once per day.</div>
+  </div>
+</div>
+
+</body>
+</html>
