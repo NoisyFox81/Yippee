@@ -64,15 +64,7 @@
   --helpAccent: var(--c2);
 }
 
-html,body{
-  height:100%;
-  margin:0;
-  overscroll-behavior:none;
-}
-body{
-  overflow:hidden; /* prevent the whole page scrolling on iPhone */
-}
-
+html,body{ height:100%; }
 
 body{
   font-family: system-ui, -apple-system, BlinkMacSystemFont;
@@ -85,15 +77,16 @@ body{
 
 /* ===== APP LAYOUT ===== */
 #app{
-  height: var(--appH, 100svh); /* iPhone-safe */
+  height: var(--vh, 100vh);
   display:flex;
   flex-direction:column;
-  overflow:hidden; /* prevents internal scroll weirdness */
+  overflow: hidden;
 }
 
-
 header{
-  
+  position:sticky;
+  top:0;
+  z-index:10;
   display:flex;
   justify-content:center;
   padding:10px 10px 8px;
@@ -246,16 +239,17 @@ header{
 
 main{
   flex:1;
-  overflow:hidden;
+  overflow:auto;
   display:flex;
   justify-content:center;
   align-items:flex-start;
-  padding:12px 10px 28px;
-
+  padding:12px 10px;
 }
 
 footer{
-  
+  position:sticky;
+  bottom:0;
+  z-index:10;
   background:linear-gradient(to top, rgba(246,246,245,0.96), rgba(246,246,245,0.86));
   backdrop-filter: blur(6px);
   padding:8px 10px 12px;
@@ -975,6 +969,12 @@ kbd{
   font-size: 12px;
   opacity: .6;
 }
+/* ===== PHONE: use native keyboard instead of the on-screen keyboard ===== */
+@media (max-width: 430px){
+  #keyboard{ display:none !important; }
+  .hint{ margin-top:8px; font-size:12px; }
+  .legal{ font-size:11px; }
+}
 
 </style>
 </head>
@@ -1149,18 +1149,6 @@ kbd{
 
 <script>
 /* ===== AUTO-SIZE ===== */
-/* ===== MOBILE VIEWPORT FIX (iPhone Safari) ===== */
-function updateAppHeight(){
-  const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-  document.documentElement.style.setProperty("--appH", h + "px");
-}
-updateAppHeight();
-window.addEventListener("resize", updateAppHeight);
-if(window.visualViewport){
-  window.visualViewport.addEventListener("resize", updateAppHeight);
-  window.visualViewport.addEventListener("scroll", updateAppHeight);
-}
-
 function setVars(tile){
   const r = document.documentElement.style;
 
@@ -1188,32 +1176,17 @@ function setVars(tile){
 }
 
 function fitLayout(){
-  const app = document.getElementById("app");
-  const header = document.querySelector("header");
-  const footer = document.querySelector("footer");
   const main = document.querySelector("main");
   const boardEl = document.getElementById("board");
-  if(!app || !header || !footer || !main || !boardEl) return;
+  if(!main || !boardEl) return;
 
-  // available height for the board area = app height - header - footer - main padding
-  const appH = app.getBoundingClientRect().height;
-  const headerH = header.getBoundingClientRect().height;
-  const footerH = footer.getBoundingClientRect().height;
-
-  const mainStyles = getComputedStyle(main);
-  const padTop = parseFloat(mainStyles.paddingTop) || 0;
-  const padBottom = parseFloat(mainStyles.paddingBottom) || 0;
-
-  const availableH = Math.max(120, appH - headerH - footerH - padTop - padBottom);
-
-  let lo = 28, hi = 56, best = 28;
+  let lo = 32, hi = 56, best = 32;
   for(let iter=0; iter<12; iter++){
     const mid = Math.floor((lo+hi)/2);
     setVars(mid);
-
+    const mainH = main.clientHeight;
     const boardH = boardEl.getBoundingClientRect().height;
-
-    if(boardH <= availableH){
+    if(boardH <= mainH){
       best = mid;
       lo = mid + 1;
     }else{
@@ -1222,7 +1195,6 @@ function fitLayout(){
   }
   setVars(best);
 }
-
 
 /* ===== AUDIO ===== */
 let audioCtx = null;
@@ -2198,6 +2170,23 @@ if(!hasPassedAdGateToday()){
   await wait(60);
   spinHeaderLogo();
 });
+
+/* ===== LOCK VIEWPORT HEIGHT ON MOBILE ===== */
+function lockViewport(){
+  const h = window.visualViewport
+    ? window.visualViewport.height
+    : window.innerHeight;
+  document.documentElement.style.setProperty("--vh", `${h}px`);
+}
+
+lockViewport();
+window.addEventListener("resize", lockViewport);
+window.addEventListener("orientationchange", lockViewport);
+if (window.visualViewport){
+  window.visualViewport.addEventListener("resize", lockViewport);
+  window.visualViewport.addEventListener("scroll", lockViewport);
+}
+
 </script>
 <!-- === AD GATE OVERLAY (once per day) === -->
 <div id="adGate" class="adgate hidden" aria-hidden="true">
