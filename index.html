@@ -239,7 +239,7 @@ header{
 
 main{
   flex:1;
-  overflow:auto;
+  overflow:hidden;
   display:flex;
   justify-content:center;
   align-items:flex-start;
@@ -1176,25 +1176,30 @@ function setVars(tile){
 }
 
 function fitLayout(){
-  const main = document.querySelector("main");
-  const boardEl = document.getElementById("board");
-  if(!main || !boardEl) return;
+  const app = document.getElementById("app");
+  if(!app) return;
 
-  let lo = 32, hi = 56, best = 32;
-  for(let iter=0; iter<12; iter++){
-    const mid = Math.floor((lo+hi)/2);
+  // We want: the whole app content (header + board + keyboard/footer) fits in viewport
+  let lo = 26, hi = 56, best = 26;
+
+  for(let iter = 0; iter < 14; iter++){
+    const mid = Math.floor((lo + hi) / 2);
     setVars(mid);
-    const mainH = main.clientHeight;
-    const boardH = boardEl.getBoundingClientRect().height;
-    if(boardH <= mainH){
+
+    // Force layout to recalc before measuring
+    const fits = app.scrollHeight <= app.clientHeight + 1;
+
+    if(fits){
       best = mid;
       lo = mid + 1;
     }else{
       hi = mid - 1;
     }
   }
+
   setVars(best);
 }
+
 
 /* ===== AUDIO ===== */
 let audioCtx = null;
