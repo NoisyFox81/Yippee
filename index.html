@@ -995,15 +995,6 @@ kbd{
     overflow: hidden;
   }
 
-  /* Hide play-board header/logo area on MOBILE (reclaim space) */
-  header,
-  #logoRow,
-  .logoRow,
-  #headerLogo,
-  .headerLogo{
-    display: none !important;
-  }
-
   /* Force smaller tiles + tighter spacing on mobile
      (this MUST override your JS auto-tuning) */
   :root{
@@ -1046,6 +1037,14 @@ kbd{
     display: none;
   }
 }
+/* PHONE: hide the top header ONLY once the intro/how screens are hidden (i.e., during gameplay) */
+@media (max-width: 520px), (max-height: 520px){
+  #introScreen.hidden ~ header,
+  #howScreen.hidden ~ header{
+    display: none !important;
+  }
+}
+
 </style>
 </head>
 
