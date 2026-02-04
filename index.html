@@ -62,9 +62,6 @@
 
   /* HELP accent (must NOT be winning green) */
   --helpAccent: var(--c2);
-
-  /* iOS safe vh */
-  --vh: 1vh;
 }
 
 html,body{ height:100%; }
@@ -81,10 +78,8 @@ body{
 /* ===== APP LAYOUT ===== */
 #app{
   height:100dvh;
-  height: calc(var(--vh, 1vh) * 100);
   display:flex;
   flex-direction:column;
-  overflow:hidden;
 }
 
 header{
@@ -112,7 +107,7 @@ header{
   border-radius:16px;
   padding:8px 10px;
 
-  /* outer box should be white */
+  /* CHANGED: outer box should be white */
   background:
     radial-gradient(220px 120px at 30% 18%, rgba(255,255,255,0.75), rgba(255,255,255,0) 60%),
     linear-gradient(180deg, rgba(255,255,255,0.40), rgba(255,255,255,0.15)),
@@ -144,7 +139,7 @@ header{
   justify-content:center;
   font-weight:1000;
 
-  /* header ? tile should match bullet green (solved) */
+  /* CHANGED: header ? tile should match bullet green (solved) */
   background: var(--solved);
 
   box-shadow:
@@ -243,7 +238,7 @@ header{
 
 main{
   flex:1;
-  overflow:hidden;
+  overflow:auto;
   display:flex;
   justify-content:center;
   align-items:flex-start;
@@ -279,7 +274,6 @@ footer{
     0 18px 40px rgba(0,0,0,0.08),
     inset 0 1px 0 rgba(255,255,255,0.65);
   perspective:900px;
-  flex-wrap:nowrap;
 }
 
 .logoTile{
@@ -587,20 +581,20 @@ footer{
   text-align:center;
 }
 
-/* BIG opening logo tiles (always one line) */
+/* BIG opening logo tiles */
 .bigLogo{
   display:flex;
+  gap:12px;
+  align-items:center;
   justify-content:center;
-  gap:8px;
-  flex-wrap:nowrap;
-  white-space:nowrap;
+  padding:10px 0 6px;
+  flex-wrap:wrap;
 }
 
 .bigLogoTile{
   width:calc(var(--logoTile) * 1.45);
   height:calc(var(--logoTile) * 1.45);
   perspective:900px;
-  flex:0 0 auto;
 }
 
 .bigInner{
@@ -679,7 +673,7 @@ footer{
   box-shadow:0 12px 22px rgba(0,0,0,0.10);
 }
 
-/* start + lets go buttons use winning green */
+/* CHANGED: start + lets go buttons use winning green */
 .btn.green{
   background: var(--solved);
   border-color: var(--solved);
@@ -807,7 +801,7 @@ footer{
   cursor:pointer;
   user-select:none;
 
-  /* X box should be white */
+  /* CHANGED: X box should be white */
   background: #ffffff;
 
   box-shadow:0 12px 22px rgba(0,0,0,0.10);
@@ -856,7 +850,7 @@ footer{
   cursor:pointer;
   user-select:none;
 
-  /* Got it button should be winning green */
+  /* CHANGED: Got it button should be winning green */
   background: var(--solved);
   border-color: var(--solved);
   color:#fff;
@@ -875,7 +869,6 @@ kbd{
   background:rgba(255,255,255,0.85);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.65);
 }
-
 /* === Ad Gate === */
 .adgate.hidden{ display:none; }
 
@@ -976,141 +969,6 @@ kbd{
   opacity: .6;
 }
 
-/* =========================
-   MOBILE HELP: EDGE TAB + DRAWER
-   ========================= */
-#helpTab, #helpDrawer, #helpScrim{ display:none; }
-
-#helpTab{
-  position:fixed;
-  right:10px;
-  top:12px;
-  z-index:10005;
-  width:42px;
-  height:42px;
-  border:2px solid var(--ink);
-  border-radius:14px;
-  background:#fff;
-  box-shadow:0 14px 28px rgba(0,0,0,0.14), inset 0 1px 0 rgba(255,255,255,0.8);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-  user-select:none;
-}
-#helpTab:active{ transform:scale(0.98); }
-#helpTab .dots{
-  font-weight:1000;
-  font-size:20px;
-  letter-spacing:2px;
-  margin-top:-2px;
-}
-#helpScrim{
-  position:fixed;
-  inset:0;
-  z-index:10004;
-  background:rgba(0,0,0,0.18);
-  backdrop-filter: blur(2px);
-}
-#helpDrawer{
-  position:fixed;
-  right:10px;
-  top:12px;
-  z-index:10006;
-  border-radius:18px;
-  padding:10px;
-  background:
-    radial-gradient(320px 180px at 20% 18%, rgba(255,255,255,0.85), rgba(255,255,255,0) 62%),
-    rgba(255,255,255,0.88);
-  border:2px solid rgba(17,17,17,0.10);
-  box-shadow:0 26px 70px rgba(0,0,0,0.18);
-  transform:translateX(18px);
-  opacity:0;
-  pointer-events:none;
-  transition:transform 180ms ease, opacity 180ms ease;
-}
-#helpDrawer.open{
-  transform:translateX(0);
-  opacity:1;
-  pointer-events:auto;
-}
-#helpDrawer .helpCluster{
-  position:relative;
-  top:auto;
-  right:auto;
-  margin:0;
-}
-
-/* MOBILE: opening logo scale */
-@media (max-width: 430px){
-  .bigLogo{
-    transform: scale(0.82);
-    transform-origin: center top;
-  }
-}
-
-/* =======================
-   MOBILE GAME LAYOUT (PHONE PORTRAIT)
-   Requirements:
-   - No header on the game screen
-   - Board first, keyboard below
-   - Help behind edge tab (3 dots)
-   ======================= */
-@media (max-width: 520px){
-  html, body{
-    height:100%;
-    margin:0;
-    overflow:hidden;
-    overscroll-behavior:none;
-    -webkit-text-size-adjust: 100%;
-    touch-action: manipulation;
-  }
-
-  /* reclaim space */
-  header{ display:none !important; }
-
-  main{
-    padding:10px 8px 6px !important;
-    align-items:flex-start;
-  }
-
-  /* footer should not steal viewport with sticky behavior */
-  footer{
-    position:relative;
-    backdrop-filter: blur(6px);
-    padding:6px 8px 10px;
-  }
-
-  /* Hide hint/legal on small phones to ensure board+keyboard fit */
-  .hint, .legal{ display:none; }
-
-  /* Let the board sit tight */
-  #wrap{
-    width: 100%;
-    margin:0;
-    gap:10px;
-  }
-
-  /* Slight keyboard compaction */
-  .keyboard{
-    width:100%;
-    gap:8px;
-  }
-  .keyRow{ gap:6px; }
-
-  /* Show help tab + drawer on phone */
-  #helpTab, #helpDrawer, #helpScrim{ display:block; }
-
-  /* Keep help tab off the intro/how screens (so it doesn't look weird) */
-  #introScreen:not(.hidden) ~ #helpTab,
-  #howScreen:not(.hidden) ~ #helpTab,
-  #introScreen:not(.hidden) ~ #helpScrim,
-  #howScreen:not(.hidden) ~ #helpScrim,
-  #introScreen:not(.hidden) ~ #helpDrawer,
-  #howScreen:not(.hidden) ~ #helpDrawer{
-    display:none !important;
-  }
-}
 </style>
 </head>
 
@@ -1130,6 +988,7 @@ kbd{
 
           <p class="subText">Tap to begin.</p>
           <div class="btnRow">
+            <!-- CHANGED: make button green -->
             <div class="btn green" id="introTap">TAP TO START</div>
           </div>
           <div class="smallNote">Sound is best with your volume up 🔊</div>
@@ -1164,6 +1023,7 @@ kbd{
           </div>
 
           <div class="btnRow">
+            <!-- CHANGED: make button green -->
             <div class="btn green" id="letsGo">LET’S GO</div>
           </div>
 
@@ -1179,6 +1039,7 @@ kbd{
       <div class="modalInner">
         <div class="modalTop">
           <div class="modalTitle" id="helpModalTitle">
+            <!-- CHANGED: modal ? tile should be white (override class background) -->
             <span class="helpInfoBtn" style="width:34px;height:34px;cursor:default;background:#fff;" aria-hidden="true">?</span>
             How HELP works
           </div>
@@ -1192,7 +1053,7 @@ kbd{
         <ul class="modalList">
           <li class="modalItem">
             <span class="modalBullet" aria-hidden="true"></span>
-            <span>Click one of the <b>green help tiles</b> to arm HELP.</span>
+            <span>Click one of the <b>green help tiles</b> (top right) to arm HELP.</span>
           </li>
           <li class="modalItem">
             <span class="modalBullet" aria-hidden="true"></span>
@@ -1222,7 +1083,7 @@ kbd{
   <!-- TOAST -->
   <div class="toast" id="toast"></div>
 
-  <!-- GAME (DESKTOP HEADER ONLY; hidden on phone via CSS) -->
+  <!-- GAME -->
   <header>
     <div class="logo" aria-label="Yippee logo">
       <div class="logoTile t0">Y</div>
@@ -1232,15 +1093,8 @@ kbd{
       <div class="logoTile t4">E</div>
       <div class="logoTile t0">E</div>
     </div>
-  </header>
 
-  <!-- MOBILE HELP: EDGE TAB + DRAWER (only visible on phone via CSS) -->
-  <div id="helpTab" aria-label="Help tab" role="button" title="Help">
-    <div class="dots">⋯</div>
-  </div>
-  <div id="helpScrim" aria-hidden="true"></div>
-  <div id="helpDrawer" aria-label="Help drawer">
-    <!-- HELP: info button + 3 spendable tiles (same IDs as before, logic unchanged) -->
+    <!-- HELP: info button + 3 spendable tiles -->
     <div class="helpCluster" id="helpCluster" aria-label="Help controls">
       <div class="helpInfoBtn" id="helpInfoBtn" role="button" aria-label="Help info">?</div>
 
@@ -1265,7 +1119,7 @@ kbd{
         </div>
       </div>
     </div>
-  </div>
+  </header>
 
   <main>
     <div id="wrap">
@@ -1278,6 +1132,7 @@ kbd{
     <div class="hint">
       Fill the tiles in a column (above + below).
     </div>
+
     <div class="legal">
       A game by Noisy Fox Studio · © 2026 Noisy Fox Studio. All rights reserved.
     </div>
@@ -1641,13 +1496,15 @@ function showAdGate(){
   const btn  = document.getElementById("adGateContinue");
   const txt  = gate.querySelector(".adgate-adtext");
 
+  // show overlay
   gate.classList.remove("hidden");
   gate.setAttribute("aria-hidden","false");
 
+  // simulate ad loading (placeholder)
   btn.disabled = true;
   txt.textContent = "Loading ad…";
 
-  const MIN_WAIT_MS = 9000;
+  const MIN_WAIT_MS = 9000; // short, fair wait
   window.setTimeout(() => {
     txt.textContent = "Ad ready. You can continue.";
     btn.disabled = false;
@@ -1660,6 +1517,7 @@ function showAdGate(){
     gate.setAttribute("aria-hidden","true");
   };
 }
+
 
 function onlyLettersUpper(s){
   return (s || "").toUpperCase().replace(/[^A-Z]/g,"");
@@ -1781,40 +1639,6 @@ function showToast(msg){
   setTimeout(()=>toast.classList.remove("show"), 1600);
 }
 
-/* ===== HELP DRAWER (mobile) ===== */
-const helpTab = document.getElementById("helpTab");
-const helpDrawer = document.getElementById("helpDrawer");
-const helpScrim = document.getElementById("helpScrim");
-
-function isPhone(){
-  return window.matchMedia && window.matchMedia("(max-width: 520px)").matches;
-}
-function openHelpDrawer(){
-  if(!isPhone()) return;
-  helpDrawer.classList.add("open");
-  helpScrim.style.display = "block";
-  helpScrim.setAttribute("aria-hidden","false");
-}
-function closeHelpDrawer(){
-  helpDrawer.classList.remove("open");
-  helpScrim.style.display = "none";
-  helpScrim.setAttribute("aria-hidden","true");
-}
-if(helpTab){
-  helpTab.addEventListener("click", ()=>{
-    if(!introScreen.classList.contains("hidden") || !howScreen.classList.contains("hidden")) return;
-    clickFeedback();
-    if(helpDrawer.classList.contains("open")) closeHelpDrawer();
-    else openHelpDrawer();
-  });
-}
-if(helpScrim){
-  helpScrim.addEventListener("click", ()=>{
-    clickFeedback();
-    closeHelpDrawer();
-  });
-}
-
 /* ===== HELP INFO MODAL (question mark button) ===== */
 const helpModal = document.getElementById("helpModal");
 const helpModalCard = document.getElementById("helpModalCard");
@@ -1883,12 +1707,14 @@ function useHelp(){
 
 function updateHelpUI(initial=false){
   const used = Math.min(3, Math.max(0, getHelpUsed()));
+  // set spent states
   helpUseEls.forEach((el, i)=>{
     if(initial) el.classList.add("noAnim");
     el.classList.toggle("spent", i < used);
     el.setAttribute("aria-disabled", (i < used) ? "true" : "false");
   });
 
+  // remove noAnim after paint so future flips animate
   if(initial){
     requestAnimationFrame(()=>{
       helpUseEls.forEach(el=>el.classList.remove("noAnim"));
@@ -1918,12 +1744,15 @@ function armHelpFromSlot(slot){
   const remaining = getHelpRemaining();
   if(remaining <= 0) return;
 
+  // slot must be one of the available ones (i >= used)
   if(slot < used || slot > 2) return;
 
   armedSlot = slot;
   setHelpArmed(true);
 
+  /* NEW: ARM SOUND */
   playHelpArm();
+
   showToast("Help armed: click a tile (ESC to cancel)");
 }
 
@@ -1948,7 +1777,10 @@ window.addEventListener("keydown",(e)=>{
     }
     if(helpArmed){
       cancelHelp();
+
+      /* NEW: CANCEL SOUND */
       playHelpCancel();
+
       showToast("Help cancelled");
       return;
     }
@@ -2007,6 +1839,7 @@ async function revealHelpOnTile(tile){
   setHelpArmed(false);
 
   playHelpUse();
+
   showToast("Help used ✨");
 
   const tilesInCol = tilesOf(tile.dataset.col);
@@ -2314,10 +2147,10 @@ introTap.addEventListener("click", async ()=>{
 });
 
 letsGo.addEventListener("click", async ()=>{
-  if(!hasPassedAdGateToday()){
-    showAdGate();
-    return;
-  }
+if(!hasPassedAdGateToday()){
+  showAdGate();
+  return;
+}
 
   ensureAudio();
   clickFeedback();
@@ -2327,19 +2160,17 @@ letsGo.addEventListener("click", async ()=>{
   const first=document.querySelector(".tile:not(.anchor):not(.spacer)");
   if(first) setSelected(first);
 
-  closeHelpDrawer();
-
   await wait(60);
   spinHeaderLogo();
 });
 </script>
-
 <!-- === AD GATE OVERLAY (once per day) === -->
 <div id="adGate" class="adgate hidden" aria-hidden="true">
   <div class="adgate-card" role="dialog" aria-modal="true" aria-labelledby="adGateTitle">
     <div class="adgate-title" id="adGateTitle">One quick ad and today’s puzzle is yours.</div>
     <div class="adgate-sub">Thanks for supporting Yippee 💛</div>
 
+    <!-- Placeholder ad box (swap later for real provider embed) -->
     <div class="adgate-adbox" id="adGateAdBox">
       <div class="adgate-adlabel">Advertisement</div>
       <div class="adgate-adfake">
@@ -2357,24 +2188,6 @@ letsGo.addEventListener("click", async ()=>{
     <div class="adgate-fineprint">This appears once per day.</div>
   </div>
 </div>
-
-<script>
-/* iOS-safe viewport height variable */
-(function(){
-  function setVH(){
-    const vv = window.visualViewport;
-    const h = vv ? vv.height : window.innerHeight;
-    document.documentElement.style.setProperty('--vh', (h * 0.01) + 'px');
-  }
-  setVH();
-  window.addEventListener('resize', setVH);
-  window.addEventListener('orientationchange', setVH);
-  if(window.visualViewport){
-    window.visualViewport.addEventListener('resize', setVH);
-    window.visualViewport.addEventListener('scroll', setVH);
-  }
-})();
-</script>
 
 </body>
 </html>
