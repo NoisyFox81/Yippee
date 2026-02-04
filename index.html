@@ -1,4 +1,3 @@
-Yippee_ad_gate_30th
 
 <!DOCTYPE html>
 <html lang="en">
@@ -978,6 +977,56 @@ kbd{
 @media (max-width: 430px) {
   header {
     display: none;
+  }
+}
+/* =======================
+   MOBILE FIT (PHONE)
+   Put this at END of <style>
+   ======================= */
+@media (max-width: 520px){
+  html, body{
+    height: 100%;
+    margin: 0;
+    overflow: hidden;   /* no scrolling */
+    overscroll-behavior: none;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* iOS-safe full height (we set --vh via JS below) */
+  #app{
+    height: 100dvh;
+    height: calc(var(--vh, 1vh) * 100);
+    overflow: hidden;
+  }
+
+  /* Hide play-board header/logo area on MOBILE (reclaim space) */
+  header,
+  #logoRow,
+  .logoRow,
+  #headerLogo,
+  .headerLogo{
+    display: none !important;
+  }
+
+  /* Force smaller tiles + tighter spacing on mobile
+     (this MUST override your JS auto-tuning) */
+  :root{
+    --tileSize: 44px !important;
+    --logoTile: 0px !important;
+    --gap: 10px !important;
+    --colGap: 8px !important;
+    --colPadY: 10px !important;
+    --colPadX: 8px !important;
+  }
+
+  main{
+    overflow: hidden;
+  }
+
+  /* If you still see that filename at top, it’s an element in your HTML.
+     You can temporarily hide common debug/name elements like this: */
+  #debug, .debug, #puzzleName, .puzzleName{
+    display: none !important;
   }
 }
 
@@ -2200,6 +2249,22 @@ if(!hasPassedAdGateToday()){
     <div class="adgate-fineprint">This appears once per day.</div>
   </div>
 </div>
+<script>
+(function(){
+  function setVH(){
+    const vv = window.visualViewport;
+    const h = vv ? vv.height : window.innerHeight;
+    document.documentElement.style.setProperty('--vh', (h * 0.01) + 'px');
+  }
+  setVH();
+  window.addEventListener('resize', setVH);
+  window.addEventListener('orientationchange', setVH);
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize', setVH);
+    window.visualViewport.addEventListener('scroll', setVH);
+  }
+})();
+</script>
 
 </body>
 </html>
