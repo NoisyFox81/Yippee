@@ -968,66 +968,6 @@ kbd{
   font-size: 12px;
   opacity: .6;
 }
-@media (max-width: 480px) {
-  body {
-    transform: scale(0.85);
-    transform-origin: top center;
-    width: 100vw;
-    overflow-x: hidden;
-  }
-}
-@media (max-width: 480px) {
-  /* Hide the big YIPPEE header row on the GAME screen only */
-  #gameScreen .logoRow,
-  #gameScreen .logoTiles,
-  #gameScreen header {
-    display: none !important;
-  }
-}
-/* Make the opening screen fully cover the app (prevents "overlay" look) */
-#openingScreen, #introScreen, #startScreen {
-  position: fixed !important;
-  inset: 0 !important;
-  z-index: 9999 !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(246,246,245,0.96);
-  backdrop-filter: blur(10px);
-}
-
-/* FIX: make intro screen fully cover the game */
-#introScreen {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(246,246,245,0.97);
-}
-
-
-@media (max-width: 480px){
-  body { outline: 8px solid red !important; }
-}
-/* MOBILE: intro screen must fully cover game */
-@media (max-width: 480px) {
-
-  #introScreen {
-    position: fixed;
-    inset: 0;
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(246,246,245,0.97);
-  }
-
-  /* Hide any other screens while intro is visible */
-  #introScreen ~ .screen {
-    display: none !important;
-  }
 
 </style>
 </head>
