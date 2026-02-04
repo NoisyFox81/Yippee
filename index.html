@@ -996,12 +996,6 @@ kbd{
   backdrop-filter: blur(10px);
 }
 
-/* Prevent clicking/seeing the game behind while the opening screen is up */
-body:has(#openingScreen:not([hidden])),
-body:has(#introScreen:not([hidden])),
-body:has(#startScreen:not([hidden])) {
-  overflow: hidden;
-}
 /* FIX: make intro screen fully cover the game */
 #introScreen {
   position: fixed;
@@ -1016,8 +1010,13 @@ body:has(#startScreen:not([hidden])) {
 #introScreen ~ #gameScreen {
   display: none;
 }
-/* MOBILE FIX: make intro screen fully cover the game */
+
+@media (max-width: 480px){
+  body { outline: 8px solid red !important; }
+}
+/* MOBILE: intro screen must fully cover game */
 @media (max-width: 480px) {
+
   #introScreen {
     position: fixed;
     inset: 0;
@@ -1028,13 +1027,15 @@ body:has(#startScreen:not([hidden])) {
     background: rgba(246,246,245,0.97);
   }
 
-  /* Hide game screen while intro is visible */
-  #introScreen ~ #gameScreen {
-    display: none;
+  /* Hide any other screens while intro is visible */
+  #introScreen ~ .screen {
+    display: none !important;
   }
-}
-@media (max-width: 480px){
-  body { outline: 8px solid red !important; }
+
+  /* DEBUG: confirm mobile CSS is loading */
+  body {
+    outline: 8px solid red !important;
+  }
 }
 
 </style>
