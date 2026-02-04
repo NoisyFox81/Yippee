@@ -1002,6 +1002,37 @@ body:has(#introScreen:not([hidden])),
 body:has(#startScreen:not([hidden])) {
   overflow: hidden;
 }
+/* FIX: make intro screen fully cover the game */
+#introScreen {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(246,246,245,0.97);
+}
+/* Hide game while intro is active */
+#introScreen ~ #gameScreen {
+  display: none;
+}
+/* MOBILE FIX: make intro screen fully cover the game */
+@media (max-width: 480px) {
+  #introScreen {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(246,246,245,0.97);
+  }
+
+  /* Hide game screen while intro is visible */
+  #introScreen ~ #gameScreen {
+    display: none;
+  }
+}
 
 </style>
 </head>
