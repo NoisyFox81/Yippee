@@ -984,6 +984,24 @@ kbd{
     display: none !important;
   }
 }
+/* Make the opening screen fully cover the app (prevents "overlay" look) */
+#openingScreen, #introScreen, #startScreen {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(246,246,245,0.96);
+  backdrop-filter: blur(10px);
+}
+
+/* Prevent clicking/seeing the game behind while the opening screen is up */
+body:has(#openingScreen:not([hidden])),
+body:has(#introScreen:not([hidden])),
+body:has(#startScreen:not([hidden])) {
+  overflow: hidden;
+}
 
 </style>
 </head>
