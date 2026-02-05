@@ -1047,6 +1047,39 @@ body.playing .wrap{
   max-width:100%;
   overflow-x:hidden;
 }
+  /* ===== PHONE PLAYING: STOP THE MIDDLE SCROLL (glue the screen) ===== */
+@media (max-width: 480px){
+  body.playing, body.playing *{
+    overscroll-behavior: none;
+  }
+
+  body.playing{
+    overflow: hidden;
+    height: 100dvh;
+    touch-action: manipulation;
+  }
+
+  body.playing #app{
+    height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* THIS is the key: kill the board scroll container */
+  body.playing main{
+    overflow: hidden !important;   /* overrides main{ overflow:auto } */
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  /* also prevent sideways drift */
+  body.playing .board,
+  body.playing #wrap{
+    overflow: hidden;
+    max-width: 100%;
+  }
+}
 </style>
 </head>
 
