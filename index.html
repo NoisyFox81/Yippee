@@ -998,7 +998,47 @@ kbd{
     transform-origin: bottom center;
   }
 }
+/* ===== PHONE LAYOUT: WORDLE-STYLE KEYBOARD + MORE BOARD SPACE ===== */
+@media (hover: none) and (pointer: coarse){
 
+  /* kill footer text on phone (it’s costing you tile size) */
+  .hint, .legal{ display:none; }
+
+  /* tighter keyboard container */
+  footer{ padding:6px 10px 10px; }
+
+  .keyboard{
+    width: 100vw;
+    max-width: 100vw;
+    margin: 0;
+    gap: 6px;
+  }
+
+  .keyRow{ gap: 6px; }
+
+  /* Wordle-ish key sizing */
+  :root{
+    --keyPadY: 10px;
+    --keyPadX: 10px;
+    --keyMinW: 28px;
+    --keyFont: 13px;
+  }
+
+  .key{
+    border-radius: 10px;
+    min-width: var(--keyMinW);
+    padding: var(--keyPadY) var(--keyPadX);
+    font-size: var(--keyFont);
+    line-height: 1;
+  }
+
+  /* make ENTER + backspace not hilariously wide */
+  .key.wide{
+    min-width: 54px !important;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
 
 </style>
 </head>
