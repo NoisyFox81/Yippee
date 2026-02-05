@@ -257,7 +257,7 @@ header{
 
 main{
   flex:1;
-  overflow:auto;
+  overflow:hidden;
   display:flex;
   justify-content:center;
   align-items:flex-start;
@@ -347,6 +347,10 @@ footer{
   display:flex;
   gap:var(--gap);
   align-items:flex-start;
+}
+/* ===== NO HORIZONTAL DRIFT SAFETY ===== */
+.board, #wrap, main{
+  max-width:100%;
 }
 
 .col[data-col="0"]{ background:var(--c0); }
@@ -986,6 +990,13 @@ kbd{
   margin-top: 10px;
   font-size: 12px;
   opacity: .6;
+}
+/* ===== MOBILE KEYBOARD SCALE ===== */
+@media (hover: none) and (pointer: coarse){
+  .keyboard{
+    transform: scale(0.88);
+    transform-origin: bottom center;
+  }
 }
 
 
