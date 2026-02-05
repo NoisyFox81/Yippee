@@ -66,6 +66,24 @@
 
 html,body{ height:100%; }
 
+/* ===== LOCK THE SCREEN (Wordle-style) ===== */
+html, body{
+  height:100%;
+  overflow:hidden;      /* kills vertical scroll */
+}
+
+body{
+  overflow-x:hidden;    /* kills horizontal drift */
+  overscroll-behavior: none; /* reduces bounce on many browsers */
+  touch-action: manipulation; /* keeps taps snappy */
+}
+
+#app{
+  height:100dvh;        /* you already have this, keep it */
+  overflow:hidden;
+}
+
+
 body{
   font-family: system-ui, -apple-system, BlinkMacSystemFont;
   background:
