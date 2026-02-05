@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -66,24 +67,6 @@
 
 html,body{ height:100%; }
 
-/* ===== LOCK THE SCREEN (Wordle-style) ===== */
-html, body{
-  height:100%;
-  overflow:hidden;      /* kills vertical scroll */
-}
-
-body{
-  overflow-x:hidden;    /* kills horizontal drift */
-  overscroll-behavior: none; /* reduces bounce on many browsers */
-  touch-action: manipulation; /* keeps taps snappy */
-}
-
-#app{
-  height:100dvh;        /* you already have this, keep it */
-  overflow:hidden;
-}
-
-
 body{
   font-family: system-ui, -apple-system, BlinkMacSystemFont;
   background:
@@ -110,7 +93,6 @@ header{
   background:linear-gradient(to bottom, rgba(246,246,245,0.96), rgba(246,246,245,0.86));
   backdrop-filter: blur(6px);
 }
-
 
 /* ===== HEADER HELP CLUSTER (info + 3 help tiles) ===== */
 .helpCluster{
@@ -257,7 +239,7 @@ header{
 
 main{
   flex:1;
-  overflow:hidden;
+  overflow:auto;
   display:flex;
   justify-content:center;
   align-items:flex-start;
@@ -347,10 +329,6 @@ footer{
   display:flex;
   gap:var(--gap);
   align-items:flex-start;
-}
-/* ===== NO HORIZONTAL DRIFT SAFETY ===== */
-.board, #wrap, main{
-  max-width:100%;
 }
 
 .col[data-col="0"]{ background:var(--c0); }
@@ -991,75 +969,20 @@ kbd{
   font-size: 12px;
   opacity: .6;
 }
-/* ===== MOBILE KEYBOARD SCALE ===== */
-@media (hover: none) and (pointer: coarse){
-  .keyboard{
+/* ===== PHONE: SCALE THE ENTIRE GAME AS ONE UNIT ===== */
+@media (max-width: 480px){
+  body{
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    overflow:hidden;
+  }
+
+  #app{
     transform: scale(0.88);
-    transform-origin: bottom center;
+    transform-origin: top center;
   }
 }
-/* ===== PHONE LAYOUT: WORDLE-STYLE KEYBOARD + MORE BOARD SPACE ===== */
-@media (hover: none) and (pointer: coarse){
-  /* ===== FORCE WORDLE-ISH KEY SHAPE (override JS-sized vars) ===== */
-  .keyboard{ width:100vw; max-width:100vw; margin:0; }
-
-
-  .key{
-    flex:1 1 0;            /* keys share the row evenly */
-    min-width:0 !important;/* prevents "3 letters fit" wide keys */
-    padding:11px 0 !important;
-    font-size:14px !important;
-    border-radius:10px;
-    line-height:1;
-  }
-
-  .key.wide{
-    flex:1.6 1 0;          /* ENTER + backspace slightly wider, not huge */
-    min-width:0 !important;
-    padding:11px 0 !important;
-    font-size:13px !important;
-  }
-
-
-  /* kill footer text on phone (it’s costing you tile size) */
-  .hint, .legal{ display:none; }
-
-  /* tighter keyboard container */
-  footer{ padding:6px 10px 10px; }
-
-  .keyboard{
-    width: 100vw;
-    max-width: 100vw;
-    margin: 0;
-    gap: 6px;
-  }
-
-  .keyRow{ gap: 6px; }
-
-  /* Wordle-ish key sizing */
-  :root{
-    --keyPadY: 10px;
-    --keyPadX: 10px;
-    --keyMinW: 28px;
-    --keyFont: 13px;
-  }
-
-  .key{
-    border-radius: 10px;
-    min-width: var(--keyMinW);
-    padding: var(--keyPadY) var(--keyPadX);
-    font-size: var(--keyFont);
-    line-height: 1;
-  }
-
-  /* make ENTER + backspace not hilariously wide */
-  .key.wide{
-    min-width: 54px !important;
-    padding-left: 12px;
-    padding-right: 12px;
-  }
-}
-
 
 </style>
 </head>
@@ -1490,12 +1413,6 @@ function playFinaleHappy(){
 
 /* ===== HELPERS ===== */
 function wait(ms){ return new Promise(r=>setTimeout(r, ms)); }
-
-/* ===== DEVICE CHECK ===== */
-function isPhoneLayout(){
-  return window.matchMedia && window.matchMedia("(hover: none) and (pointer: coarse)").matches;
-}
-
 
 /* ===== HEADER LOGO SPIN ===== */
 function spinHeaderLogo(){
@@ -2237,10 +2154,6 @@ introTap.addEventListener("click", async ()=>{
   ensureAudio();
   clickFeedback();
 
-if (isPhoneLayout()) {
-  document.querySelector("header").style.display = "none";
-}
-
   await playBigIntroFlip();
   await wait(260);
 
@@ -2254,11 +2167,8 @@ if(!hasPassedAdGateToday()){
   return;
 }
 
-document.body.classList.add("playing");
-
   ensureAudio();
   clickFeedback();
-
 
   howScreen.classList.add("hidden");
 
