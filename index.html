@@ -968,6 +968,10 @@ kbd{
   font-size: 12px;
   opacity: .6;
 }
+/* ===== PLAY MODE (game page only) ===== */
+body.playing header{
+  display:none;
+}
 
 </style>
 </head>
@@ -2151,6 +2155,8 @@ if(!hasPassedAdGateToday()){
   showAdGate();
   return;
 }
+
+document.body.classList.add("playing");
 
   ensureAudio();
   clickFeedback();
