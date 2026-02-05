@@ -93,6 +93,12 @@ header{
   backdrop-filter: blur(6px);
 }
 
+/* ===== PLAY MODE (hide header ONLY on small screens) ===== */
+@media (max-width: 768px){
+  body.playing header{
+    display:none;
+}
+
 /* ===== HEADER HELP CLUSTER (info + 3 help tiles) ===== */
 .helpCluster{
   position:absolute;
