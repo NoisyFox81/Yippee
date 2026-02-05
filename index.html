@@ -983,7 +983,13 @@ kbd{
     transform-origin: top center;
   }
 }
-
+/* ===== FORCE PHONE KEYBOARD SHRINK (visually) ===== */
+@media (max-width: 480px){
+  .keyboard{
+    transform: scale(0.82) !important;
+    transform-origin: bottom center;
+  }
+}
 </style>
 </head>
 
