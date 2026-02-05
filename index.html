@@ -969,36 +969,28 @@ kbd{
   font-size: 12px;
   opacity: .6;
 }
-/* ===== PHONE: SHRINK WHOLE GAME AS ONE UNIT ===== */
-:root{ --phoneScale: 1; }
 
+/* ===== PHONE: SHRINK WHOLE GAME (SAFARI-SAFE) ===== */
 @media (max-width: 480px){
-  :root{ --phoneScale: 0.95; } /* 5% shrink */
 
   html, body{
-    height:100%;
-    margin:0;
-    overflow:hidden;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
   }
 
   #app{
-    height:100dvh;
-    overflow:hidden;
-    display:flex;
-    justify-content:center;
-    align-items:flex-start;
+    height: 100dvh;
+    overflow: hidden;
   }
 
-  /* scale the single wrapper that contains EVERYTHING */
+  /* scale visually only, do NOT alter layout width */
   #stage{
-    transform: scale(var(--phoneScale));
+    transform: scale(0.95);        /* try 0.95 first */
     transform-origin: top center;
-
-    /* compensate layout size so no dead space appears */
-    width: calc(100% / var(--phoneScale));
+    will-change: transform;
   }
 }
-
 </style>
 </head>
 
