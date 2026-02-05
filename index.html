@@ -498,10 +498,16 @@ footer{
 .key{
   border:2px solid #111;
   border-radius:12px;
-  padding: var(--keyPadY) var(--keyPadX);
+
+  /* KEEP vertical padding */
+  padding: var(--keyPadY) calc(var(--keyPadX) * 0.7);
+
   font-weight:900;
   cursor:pointer;
-  min-width: var(--keyMinW);
+
+  /* reduce horizontal footprint */
+  min-width: calc(var(--keyMinW) * 0.85);
+
   box-shadow:0 8px 14px rgba(0,0,0,0.1);
   user-select:none;
   background:var(--keyNeutral);
