@@ -1080,6 +1080,38 @@ body.playing .wrap{
     max-width: 100%;
   }
 }
+  /* ===== PHONE: make keyboard scale WITH the board (same sizing system) ===== */
+@media (max-width: 480px){
+  body.playing{
+    /* keyboard scale driven off tile size */
+    --keyPadY: calc(var(--tileSize) * 0.18);
+    --keyPadX: calc(var(--tileSize) * 0.22);
+    --keyFont: calc(var(--tileSize) * 0.28);
+    --keyGap:  calc(var(--gap) * 0.55);
+  }
+
+  body.playing .keyboard{
+    padding: 6px 8px 10px;
+    gap: var(--keyGap);
+  }
+
+  body.playing .keyRow{
+    gap: var(--keyGap);
+    padding: 0;
+  }
+
+  body.playing .key{
+    padding: var(--keyPadY) var(--keyPadX) !important;
+    font-size: var(--keyFont) !important;
+    min-width: 0 !important;
+    line-height: 1;
+  }
+
+  body.playing .key.wide{
+    /* keep ENTER/backspace a bit wider, but still scaled */
+    padding: var(--keyPadY) calc(var(--keyPadX) * 1.25) !important;
+  }
+}
 </style>
 </head>
 
