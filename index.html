@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -83,9 +84,6 @@ body{
 }
 
 header{
-  position:sticky;
-  top:0;
-  z-index:10;
   display:flex;
   justify-content:center;
   padding:10px 10px 8px;
@@ -238,7 +236,6 @@ header{
 
 main{
   flex:1;
-  overflow:auto;
   display:flex;
   justify-content:center;
   align-items:flex-start;
@@ -246,9 +243,6 @@ main{
 }
 
 footer{
-  position:sticky;
-  bottom:0;
-  z-index:10;
   background:linear-gradient(to top, rgba(246,246,245,0.96), rgba(246,246,245,0.86));
   backdrop-filter: blur(6px);
   padding:8px 10px 12px;
@@ -968,155 +962,13 @@ kbd{
   font-size: 12px;
   opacity: .6;
 }
-/* ====== PHONE: shrink the whole game as ONE block (no re-layout) ====== */
-@media (max-width: 480px){
 
-  /* stop the page doing the stupid scroll / drift */
-  html, body{
-    height: 100%;
-    overflow: hidden;
-  }
-
-  /* only when actually playing (so intro/instructions can behave normally) */
-  body.playing #app{
-    --phoneScale: 0.93;                 /* 0.95 = -5%, 0.93 = -7%, tweak later */
-
-    transform: scale(var(--phoneScale));
-    transform-origin: top center;
-
-    /* “unshrink” the layout box so scaled content still fits the viewport */
-    width: calc(100% / var(--phoneScale));
-    height: calc(100dvh / var(--phoneScale));
-
-    /* center it so it doesn’t drift left/right */
-    margin: 0 auto;
-  }
-}
-/* ====== GLUE MODE: make the app ONE solid screen (no sticky/fixed, no page scroll) ====== */
-html, body{
-  height:100%;
-  margin:0;
-}
-
-/* When PLAYING: lock the page and make #app a single full-height layout */
-body.playing{
-  overflow:hidden;           /* stops the stupid swipe/scroll */
-  height:100dvh;
-}
-
-body.playing #app{
-  height:100dvh;
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
-}
-
-/* Header becomes a normal block (NOT sticky) */
-body.playing header{
-  position:relative !important;
-  top:auto !important;
-  z-index:auto !important;
-  flex:0 0 auto;
-}
-
-/* Main (board area) takes the remaining height */
-body.playing main{
-  flex:1 1 auto;
-  min-height:0;              /* critical for flex layouts */
-  overflow:hidden;
-  display:flex;
-  justify-content:center;
-  align-items:flex-start;
-}
-
-/* Keyboard becomes a normal block (NOT fixed) */
-body.playing .keyboard{
-  position:relative !important;
-  bottom:auto !important;
-  left:auto !important;
-  right:auto !important;
-  flex:0 0 auto;
-}
-
-/* Safety: prevent sideways drift */
-body.playing #app,
-body.playing main,
-body.playing .keyboard,
-body.playing .board,
-body.playing .wrap{
-  max-width:100%;
-  overflow-x:hidden;
-}
-  /* ===== PHONE PLAYING: STOP THE MIDDLE SCROLL (glue the screen) ===== */
-@media (max-width: 480px){
-  body.playing, body.playing *{
-    overscroll-behavior: none;
-  }
-
-  body.playing{
-    overflow: hidden;
-    height: 100dvh;
-    touch-action: manipulation;
-  }
-
-  body.playing #app{
-    height: 100dvh;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* THIS is the key: kill the board scroll container */
-  body.playing main{
-    overflow: hidden !important;   /* overrides main{ overflow:auto } */
-    flex: 1 1 auto;
-    min-height: 0;
-  }
-
-  /* also prevent sideways drift */
-  body.playing .board,
-  body.playing #wrap{
-    overflow: hidden;
-    max-width: 100%;
-  }
-}
-  /* ===== PHONE: make keyboard scale WITH the board (same sizing system) ===== */
-@media (max-width: 480px){
-  body.playing{
-    /* keyboard scale driven off tile size */
-    --keyPadY: calc(var(--tileSize) * 0.18);
-    --keyPadX: calc(var(--tileSize) * 0.22);
-    --keyFont: calc(var(--tileSize) * 0.28);
-    --keyGap:  calc(var(--gap) * 0.55);
-  }
-
-  body.playing .keyboard{
-    padding: 6px 8px 10px;
-    gap: var(--keyGap);
-  }
-
-  body.playing .keyRow{
-    gap: var(--keyGap);
-    padding: 0;
-  }
-
-  body.playing .key{
-    padding: var(--keyPadY) var(--keyPadX) !important;
-    font-size: var(--keyFont) !important;
-    min-width: 0 !important;
-    line-height: 1;
-  }
-
-  body.playing .key.wide{
-    /* keep ENTER/backspace a bit wider, but still scaled */
-    padding: var(--keyPadY) calc(var(--keyPadX) * 1.25) !important;
-  }
-}
 </style>
 </head>
 
 <body>
 <div id="app">
+<div id="gameWrap">
 
   <!-- OPENING SCREEN -->
   <div class="screen" id="introScreen" aria-label="Opening screen">
