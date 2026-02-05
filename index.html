@@ -1,3 +1,4 @@
+Yippee_ad_gate_30th
 
 <!DOCTYPE html>
 <html lang="en">
@@ -969,35 +970,36 @@ kbd{
   font-size: 12px;
   opacity: .6;
 }
-
-/* ===== PHONE: SHRINK WHOLE GAME (SAFARI-SAFE) ===== */
+/* ====== PHONE: shrink the whole game as ONE block (no re-layout) ====== */
 @media (max-width: 480px){
 
+  /* stop the page doing the stupid scroll / drift */
   html, body{
     height: 100%;
-    margin: 0;
     overflow: hidden;
   }
 
-  #app{
-    height: 100dvh;
-    overflow: hidden;
-  }
+  /* only when actually playing (so intro/instructions can behave normally) */
+  body.playing #app{
+    --phoneScale: 0.93;                 /* 0.95 = -5%, 0.93 = -7%, tweak later */
 
-  /* scale visually only, do NOT alter layout width */
-  #stage{
-    transform: scale(0.95);        /* try 0.95 first */
+    transform: scale(var(--phoneScale));
     transform-origin: top center;
-    will-change: transform;
+
+    /* “unshrink” the layout box so scaled content still fits the viewport */
+    width: calc(100% / var(--phoneScale));
+    height: calc(100dvh / var(--phoneScale));
+
+    /* center it so it doesn’t drift left/right */
+    margin: 0 auto;
   }
 }
+
 </style>
 </head>
 
 <body>
 <div id="app">
-  <div id="stage">
-
 
   <!-- OPENING SCREEN -->
   <div class="screen" id="introScreen" aria-label="Opening screen">
@@ -2212,6 +2214,6 @@ if(!hasPassedAdGateToday()){
     <div class="adgate-fineprint">This appears once per day.</div>
   </div>
 </div>
-</div>
+
 </body>
 </html>
