@@ -1003,12 +1003,26 @@ kbd{
     flex-shrink:0;
   }
 
-  header{
-    padding:6px 112px 6px 10px;
-    padding-top:max(6px, env(safe-area-inset-top));
+  :root{
+    --mobileHelpReserve:108px;
   }
 
-  .logo{
+  header{
+    display:flex;
+    flex-direction:row;
+    align-items:center;
+    justify-content:space-between;
+    gap:6px;
+    padding:
+      max(6px, env(safe-area-inset-top))
+      max(8px, env(safe-area-inset-right))
+      6px
+      max(10px, env(safe-area-inset-left));
+  }
+
+  header .logo{
+    flex:1 1 auto;
+    min-width:0;
     padding:6px 8px;
     gap:6px;
     border-radius:14px;
@@ -1017,12 +1031,32 @@ kbd{
       inset 0 1px 0 rgba(255,255,255,0.65);
   }
 
+  header .logoTile{
+    --logoTileCap:calc(
+      (
+        100vw
+        - max(10px, env(safe-area-inset-left))
+        - max(8px, env(safe-area-inset-right))
+        - var(--mobileHelpReserve)
+        - 12px
+        - 16px
+        - 30px
+      ) / 6
+    );
+    width:min(var(--logoTile), max(22px, var(--logoTileCap)));
+    height:min(var(--logoTile), max(22px, var(--logoTileCap)));
+    font-size:calc(min(var(--logoTile), max(22px, var(--logoTileCap))) * 0.5);
+  }
+
   .helpCluster{
-    right:8px;
-    top:50%;
-    transform:translateY(-50%);
-    gap:6px;
-    padding:6px 8px;
+    position:relative;
+    right:auto;
+    top:auto;
+    transform:none;
+    flex:0 0 auto;
+    flex-shrink:0;
+    gap:4px;
+    padding:4px 6px;
     border-radius:14px;
     box-shadow:
       0 10px 22px rgba(0,0,0,0.10),
@@ -1030,18 +1064,23 @@ kbd{
   }
 
   .helpInfoBtn{
-    width:28px;
-    height:28px;
-    border-radius:10px;
+    width:24px;
+    height:24px;
+    border-radius:9px;
+    font-size:14px;
   }
 
   .helpUses{
-    gap:6px;
+    gap:4px;
   }
 
   .miniHelpTile{
-    width:22px;
-    height:22px;
+    width:18px;
+    height:18px;
+  }
+
+  .miniHelpFace{
+    border-radius:8px;
   }
 
   main{
