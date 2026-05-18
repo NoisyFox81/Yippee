@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Yippee</title>
 
 <style>
@@ -84,6 +84,7 @@ body{
 }
 
 header{
+  position:relative;
   display:flex;
   justify-content:center;
   padding:10px 10px 8px;
@@ -519,7 +520,7 @@ footer{
 .keyRow:nth-child(3) .key{ background:var(--keyPeach); }
 
 .key.wide{ background:#f0f0f0 !important; }
-.key:active{ transform:scale(0.93); }
+.key:active{ transform:scale(0.96); }
 
 .hint{
   width:min(900px, 96vw);
@@ -968,19 +969,246 @@ kbd{
   font-size: 12px;
   opacity: .6;
 }
-/* ===== GLOBAL SCALE FOR MOBILE (GAME ONLY) ===== */
+/* ===== MOBILE PORTRAIT (game layout) ===== */
 @media (max-width: 480px){
-  body.inGame #app{
-    transform: scale(0.70);
-    transform-origin: top center;
+  body{
+    overflow:hidden;
+  }
+
+  #app{
+    height:100dvh;
+    height:100svh;
+    min-height:0;
+    overflow:hidden;
+  }
+
+  #gameWrap{
+    flex:1 1 auto;
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+  }
+
+  header{
+    flex-shrink:0;
+  }
+
+  main{
+    flex:1 1 auto;
+    min-height:0;
+    overflow:hidden;
+  }
+
+  footer{
+    flex-shrink:0;
+  }
+
+  header{
+    padding:6px 112px 6px 10px;
+    padding-top:max(6px, env(safe-area-inset-top));
+  }
+
+  .logo{
+    padding:6px 8px;
+    gap:6px;
+    border-radius:14px;
+    box-shadow:
+      0 10px 24px rgba(0,0,0,0.07),
+      inset 0 1px 0 rgba(255,255,255,0.65);
+  }
+
+  .helpCluster{
+    right:8px;
+    top:50%;
+    transform:translateY(-50%);
+    gap:6px;
+    padding:6px 8px;
+    border-radius:14px;
+    box-shadow:
+      0 10px 22px rgba(0,0,0,0.10),
+      inset 0 1px 0 rgba(255,255,255,0.75);
+  }
+
+  .helpInfoBtn{
+    width:28px;
+    height:28px;
+    border-radius:10px;
+  }
+
+  .helpUses{
+    gap:6px;
+  }
+
+  .miniHelpTile{
+    width:22px;
+    height:22px;
+  }
+
+  main{
+    padding:2px 6px 4px;
+    align-items:center;
+  }
+
+  #wrap{
+    width:100%;
+    max-width:100%;
+    gap:0;
+  }
+
+  .board{
+    max-width:100%;
+  }
+
+  footer{
+    padding:6px 8px max(8px, env(safe-area-inset-bottom));
+  }
+
+  .keyboard{
+    width:100%;
+    max-width:100%;
+    gap:6px;
+  }
+
+  .keyRow{
+    gap:4px;
+    width:100%;
+  }
+
+  .key{
+    flex:1 1 0;
+    min-width:0;
+    border-radius:10px;
+    padding:var(--keyPadY) 2px;
+    box-shadow:0 5px 10px rgba(0,0,0,0.08);
+  }
+
+  .key.wide{
+    flex:1.35 1 0;
+    font-size:calc(var(--keyFont) * 0.92);
+    letter-spacing:-0.2px;
+  }
+
+  .hint{
+    width:100%;
+    margin:5px auto 0;
+    font-size:11px;
+    opacity:0.62;
+    line-height:1.15;
+    padding:0 4px;
+  }
+
+  .legal{
+    display:none;
+  }
+
+  /* ===== OPENING SCREEN (mobile portrait) ===== */
+  #introScreen{
+    --introGap:clamp(5px, 1.6vw, 9px);
+    --introLogoTile:min(
+      46px,
+      calc((100vw - 28px - 5 * var(--introGap)) / 6 / 1.45)
+    );
+    --introLogoH:calc(var(--introLogoTile) * 1.45);
+  }
+
+  #introScreen.screen{
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    padding:
+      calc(max(10px, env(safe-area-inset-top, 0px)) + var(--introLogoH) + clamp(14px, 3.5vh, 22px))
+      max(14px, env(safe-area-inset-right))
+      max(16px, env(safe-area-inset-bottom))
+      max(14px, env(safe-area-inset-left));
+    overflow-x:hidden;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;
+  }
+
+  #introScreen .stack{
+    gap:12px;
+    width:100%;
+  }
+
+  #introScreen .bigLogo{
+    position:absolute;
+    top:max(10px, env(safe-area-inset-top));
+    left:50%;
+    transform:translateX(-50%);
+    width:min(100%, calc(100vw - 28px));
+    margin:0;
+    padding:0;
+    gap:var(--introGap);
+    flex-wrap:nowrap;
+    justify-content:center;
+    box-sizing:border-box;
+    z-index:1;
+  }
+
+  #introScreen .bigLogoTile{
+    width:calc(var(--introLogoTile) * 1.45);
+    height:calc(var(--introLogoTile) * 1.45);
+    flex:0 0 auto;
+  }
+
+  #introScreen .bigFace{
+    font-size:calc(var(--introLogoTile) * 0.78);
+    border-radius:14px;
+  }
+
+  #introScreen .panel{
+    width:min(100%, 360px);
+    margin:0 auto;
+    padding:16px 14px;
+    border-radius:20px;
+    flex-shrink:0;
+  }
+
+  #introScreen .panelInner{
+    padding:16px 14px 14px;
+    border-radius:16px;
+  }
+
+  #introScreen .byline{
+    font-size:10.5px;
+    line-height:1.35;
+    opacity:0.68;
+    margin-top:0;
+    padding:0 4px;
+  }
+
+  #introScreen .subText{
+    font-size:15px;
+    margin:2px 0 0;
+  }
+
+  #introScreen .btnRow{
+    margin-top:10px;
+    width:100%;
+  }
+
+  #introScreen .btn{
+    width:100%;
+    max-width:280px;
+    padding:14px 18px;
+    font-size:16px;
+    border-radius:16px;
+  }
+
+  #introScreen .smallNote{
+    margin-top:8px;
+    font-size:11.5px;
+    opacity:0.65;
   }
 }
+
 </style>
 </head>
 
 <body>
 <div id="app">
-
+<div id="gameWrap">
 
   <!-- OPENING SCREEN -->
   <div class="screen" id="introScreen" aria-label="Opening screen">
@@ -1149,19 +1377,30 @@ kbd{
 
 <script>
 /* ===== AUTO-SIZE ===== */
-function setVars(tile){
+const MOBILE_MQ = window.matchMedia("(max-width: 480px)");
+
+function isMobileLayout(){
+  return MOBILE_MQ.matches;
+}
+
+function viewportHeight(){
+  return window.visualViewport?.height ?? window.innerHeight;
+}
+
+function setVars(tile, mobile){
   const r = document.documentElement.style;
+  const m = mobile ?? isMobileLayout();
 
-  const logo = Math.max(34, Math.round(tile * 0.92));
-  const gap = Math.max(8, Math.round(tile * 0.21));
-  const colGap = Math.max(8, Math.round(tile * 0.18));
-  const colPadY = Math.max(10, Math.round(tile * 0.25));
-  const colPadX = Math.max(8, Math.round(tile * 0.18));
+  const logo = Math.max(m ? 28 : 34, Math.round(tile * (m ? 0.88 : 0.92)));
+  const gap = Math.max(m ? 5 : 8, Math.round(tile * (m ? 0.16 : 0.21)));
+  const colGap = Math.max(m ? 5 : 8, Math.round(tile * (m ? 0.15 : 0.18)));
+  const colPadY = Math.max(m ? 6 : 10, Math.round(tile * (m ? 0.20 : 0.25)));
+  const colPadX = Math.max(m ? 5 : 8, Math.round(tile * (m ? 0.15 : 0.18)));
 
-  const keyPadY = Math.max(8, Math.round(tile * 0.23));
-  const keyPadX = Math.max(8, Math.round(tile * 0.20));
-  const keyMinW = Math.max(26, Math.round(tile * 0.60));
-  const keyFont = Math.max(11, Math.round(tile * 0.25));
+  const keyPadY = Math.max(m ? 7 : 8, Math.round(tile * (m ? 0.20 : 0.23)));
+  const keyPadX = Math.max(m ? 4 : 8, Math.round(tile * (m ? 0.14 : 0.20)));
+  const keyMinW = Math.max(m ? 0 : 26, Math.round(tile * (m ? 0 : 0.60)));
+  const keyFont = Math.max(m ? 11 : 11, Math.round(tile * (m ? 0.28 : 0.25)));
 
   r.setProperty("--tileSize", tile + "px");
   r.setProperty("--logoTile", logo + "px");
@@ -1175,25 +1414,72 @@ function setVars(tile){
   r.setProperty("--keyFont", keyFont + "px");
 }
 
+function boardFits(main, boardEl, mobile){
+  const availH = mobile
+    ? Math.max(60, viewportHeight()
+        - (document.querySelector("header")?.getBoundingClientRect().height ?? 0)
+        - (document.querySelector("footer")?.getBoundingClientRect().height ?? 0)
+        - 2)
+    : main.clientHeight;
+
+  const boardH = boardEl.getBoundingClientRect().height;
+  const boardW = boardEl.getBoundingClientRect().width;
+  const maxW = main.clientWidth - 2;
+
+  return boardH <= availH && boardW <= maxW;
+}
+
 function fitLayout(){
   const main = document.querySelector("main");
   const boardEl = document.getElementById("board");
+  const app = document.getElementById("app");
   if(!main || !boardEl) return;
 
-  let lo = 32, hi = 56, best = 32;
-  for(let iter=0; iter<12; iter++){
-    const mid = Math.floor((lo+hi)/2);
-    setVars(mid);
-    const mainH = main.clientHeight;
-    const boardH = boardEl.getBoundingClientRect().height;
-    if(boardH <= mainH){
+  if(!isMobileLayout()){
+    let lo = 32, hi = 56, best = 32;
+    for(let iter=0; iter<12; iter++){
+      const mid = Math.floor((lo + hi) / 2);
+      setVars(mid, false);
+      const mainH = main.clientHeight;
+      const boardH = boardEl.getBoundingClientRect().height;
+      if(boardH <= mainH){
+        best = mid;
+        lo = mid + 1;
+      }else{
+        hi = mid - 1;
+      }
+    }
+    setVars(best, false);
+    return;
+  }
+
+  let lo = 26, hi = 54, best = lo;
+  for(let iter=0; iter<14; iter++){
+    const mid = Math.floor((lo + hi) / 2);
+    setVars(mid, true);
+    void boardEl.offsetHeight;
+
+    if(boardFits(main, boardEl, true)){
       best = mid;
       lo = mid + 1;
     }else{
       hi = mid - 1;
     }
   }
-  setVars(best);
+
+  setVars(best, true);
+
+  let shrink = best;
+  const minTile = 26;
+  const vh = viewportHeight();
+  while(shrink > minTile){
+    setVars(shrink, true);
+    void boardEl.offsetHeight;
+    const appBottom = app?.getBoundingClientRect().bottom ?? 0;
+    if(appBottom <= vh + 1 && boardFits(main, boardEl, true)) break;
+    shrink--;
+  }
+  setVars(shrink, true);
 }
 
 /* ===== AUDIO ===== */
@@ -2112,7 +2398,12 @@ updateHelpUI(true);
 
 requestAnimationFrame(()=>{ fitLayout(); });
 setTimeout(fitLayout, 80);
-window.addEventListener("resize", ()=>{ fitLayout(); });
+window.addEventListener("resize", fitLayout);
+MOBILE_MQ.addEventListener("change", fitLayout);
+if(window.visualViewport){
+  window.visualViewport.addEventListener("resize", fitLayout);
+  window.visualViewport.addEventListener("scroll", fitLayout);
+}
 
 const first=document.querySelector(".tile:not(.anchor):not(.spacer)");
 if(first) setSelected(first);
@@ -2166,6 +2457,9 @@ if(!hasPassedAdGateToday()){
 
   const first=document.querySelector(".tile:not(.anchor):not(.spacer)");
   if(first) setSelected(first);
+
+  requestAnimationFrame(fitLayout);
+  setTimeout(fitLayout, 80);
 
   await wait(60);
   spinHeaderLogo();
