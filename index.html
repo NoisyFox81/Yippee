@@ -1343,7 +1343,7 @@ kbd{
           </li>
           <li class="modalItem">
             <span class="modalBullet" aria-hidden="true"></span>
-            <span>To cancel after arming, press <kbd>ESC</kbd>.</span>
+            <span>To cancel after arming, tap the same help tile again (or press <kbd>ESC</kbd> on desktop).</span>
           </li>
         </ul>
 
@@ -2079,13 +2079,18 @@ function armHelpFromSlot(slot){
   // slot must be one of the available ones (i >= used)
   if(slot < used || slot > 2) return;
 
+  if(helpArmed && armedSlot === slot){
+    disarmHelpWithFeedback();
+    return;
+  }
+
   armedSlot = slot;
   setHelpArmed(true);
 
   /* NEW: ARM SOUND */
   playHelpArm();
 
-  showToast("Help armed: click a tile (ESC to cancel)");
+  showToast("Help armed: tap a tile (tap help again or ESC to cancel)");
 }
 
 helpUseEls.forEach(el=>{
@@ -2100,6 +2105,13 @@ function cancelHelp(){
   setHelpArmed(false);
 }
 
+function disarmHelpWithFeedback(){
+  if(!helpArmed) return;
+  cancelHelp();
+  playHelpCancel();
+  showToast("Help cancelled");
+}
+
 window.addEventListener("keydown",(e)=>{
   if(e.key === "Escape"){
     if(helpModalOpen){
@@ -2108,12 +2120,7 @@ window.addEventListener("keydown",(e)=>{
       return;
     }
     if(helpArmed){
-      cancelHelp();
-
-      /* NEW: CANCEL SOUND */
-      playHelpCancel();
-
-      showToast("Help cancelled");
+      disarmHelpWithFeedback();
       return;
     }
   }
